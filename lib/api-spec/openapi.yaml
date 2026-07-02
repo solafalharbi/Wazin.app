@@ -1,22 +1,35 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Wazin وازِن - AI-powered financial education platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: user
+    description: User profile and settings
+  - name: dashboard
+    description: Dashboard aggregates and summaries
+  - name: simulation
+    description: RPG budget simulation game
+  - name: events
+    description: Economic events and challenges
+  - name: ai
+    description: AI financial advisor
+  - name: rewards
+    description: Rewards and Alinma Bank offers
+  - name: leaderboard
+    description: Leaderboard rankings
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +37,748 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /user/profile:
+    get:
+      operationId: getUserProfile
+      tags: [user]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    patch:
+      operationId: updateUserProfile
+      tags: [user]
+      summary: Update user profile (language, theme, etc.)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary - XP, budget health, stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/activity:
+    get:
+      operationId: getActivityFeed
+      tags: [dashboard]
+      summary: Recent user activity feed
+      responses:
+        "200":
+          description: Activity feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /dashboard/budget-stats:
+    get:
+      operationId: getBudgetStats
+      tags: [dashboard]
+      summary: Budget performance over time (chart data)
+      responses:
+        "200":
+          description: Budget stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetStats"
+
+  /simulation/state:
+    get:
+      operationId: getSimulationState
+      tags: [simulation]
+      summary: Get current game simulation state
+      responses:
+        "200":
+          description: Simulation state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationState"
+
+  /simulation/start:
+    post:
+      operationId: startSimulation
+      tags: [simulation]
+      summary: Start or restart simulation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulationStartInput"
+      responses:
+        "200":
+          description: New simulation state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationState"
+
+  /simulation/allocate:
+    post:
+      operationId: allocateBudget
+      tags: [simulation]
+      summary: Allocate budget across categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetAllocationInput"
+      responses:
+        "200":
+          description: Updated simulation state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationState"
+
+  /events:
+    get:
+      operationId: getEconomicEvents
+      tags: [events]
+      summary: Get active economic events/challenges
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EconomicEvent"
+
+  /events/{eventId}/decide:
+    post:
+      operationId: makeDecision
+      tags: [events]
+      summary: Make a decision on an economic event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecisionInput"
+      responses:
+        "200":
+          description: Decision result with XP and AI feedback
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DecisionResult"
+
+  /events/history:
+    get:
+      operationId: getDecisionHistory
+      tags: [events]
+      summary: Get past decisions and their outcomes
+      responses:
+        "200":
+          description: Decision history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DecisionHistoryItem"
+
+  /ai/chat:
+    get:
+      operationId: getChatHistory
+      tags: [ai]
+      summary: Get AI advisor chat history
+      responses:
+        "200":
+          description: Chat messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+    post:
+      operationId: sendChatMessage
+      tags: [ai]
+      summary: Send message to AI financial advisor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageInput"
+      responses:
+        "200":
+          description: AI response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+
+  /ai/insight:
+    get:
+      operationId: getAIInsight
+      tags: [ai]
+      summary: Get personalized AI financial insight for dashboard
+      responses:
+        "200":
+          description: AI insight
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AIInsight"
+
+  /rewards:
+    get:
+      operationId: getRewards
+      tags: [rewards]
+      summary: Get available rewards catalog (Alinma Bank offers)
+      responses:
+        "200":
+          description: Rewards list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reward"
+
+  /rewards/my:
+    get:
+      operationId: getUserRewards
+      tags: [rewards]
+      summary: Get user's earned and redeemed rewards
+      responses:
+        "200":
+          description: User rewards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserReward"
+
+  /rewards/{rewardId}/redeem:
+    post:
+      operationId: redeemReward
+      tags: [rewards]
+      summary: Redeem a virtual reward for a real offer
+      parameters:
+        - name: rewardId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Redemption confirmation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RedemptionResult"
+
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [leaderboard]
+      summary: Get global leaderboard rankings
+      responses:
+        "200":
+          description: Leaderboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Leaderboard"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    UserProfile:
+      type: object
+      required: [id, username, email, xp, level, coins, language, theme, avatarUrl, joinedAt]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        xp:
+          type: integer
+        level:
+          type: integer
+        coins:
+          type: integer
+        language:
+          type: string
+          enum: [ar, en]
+        theme:
+          type: string
+          enum: [light, dark]
+        avatarUrl:
+          type: ["string", "null"]
+        badge:
+          type: ["string", "null"]
+        joinedAt:
+          type: string
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        language:
+          type: string
+          enum: [ar, en]
+        theme:
+          type: string
+          enum: [light, dark]
+        username:
+          type: string
+
+    DashboardSummary:
+      type: object
+      required: [user, budgetHealth, xpToNextLevel, activeChallenges, totalRewards, weeklyXpGain, rank]
+      properties:
+        user:
+          $ref: "#/components/schemas/UserProfile"
+        budgetHealth:
+          type: integer
+          description: Budget health score 0-100
+        xpToNextLevel:
+          type: integer
+        activeChallenges:
+          type: integer
+        totalRewards:
+          type: integer
+        weeklyXpGain:
+          type: integer
+        rank:
+          type: integer
+        savingsRate:
+          type: number
+        spendingBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpendingCategory"
+
+    SpendingCategory:
+      type: object
+      required: [category, amount, percentage]
+      properties:
+        category:
+          type: string
+        categoryAr:
+          type: string
+        amount:
+          type: number
+        percentage:
+          type: number
+        color:
+          type: string
+
+    ActivityItem:
+      type: object
+      required: [id, type, titleEn, titleAr, descriptionEn, descriptionAr, xpChange, createdAt]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [decision, reward, level_up, challenge, ai_advice]
+        titleEn:
+          type: string
+        titleAr:
+          type: string
+        descriptionEn:
+          type: string
+        descriptionAr:
+          type: string
+        xpChange:
+          type: integer
+        coinsChange:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+
+    BudgetStats:
+      type: object
+      required: [monthly, categories]
+      properties:
+        monthly:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthlyBudget"
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpendingCategory"
+
+    MonthlyBudget:
+      type: object
+      required: [month, income, expenses, savings]
+      properties:
+        month:
+          type: string
+        income:
+          type: number
+        expenses:
+          type: number
+        savings:
+          type: number
+
+    SimulationState:
+      type: object
+      required: [id, month, year, totalBudget, allocations, healthScore, xpEarned, status]
+      properties:
+        id:
+          type: integer
+        month:
+          type: integer
+        year:
+          type: integer
+        totalBudget:
+          type: number
+        allocations:
+          type: array
+          items:
+            $ref: "#/components/schemas/BudgetAllocation"
+        healthScore:
+          type: integer
+        xpEarned:
+          type: integer
+        status:
+          type: string
+          enum: [active, paused, completed]
+        pendingEvents:
+          type: integer
+
+    BudgetAllocation:
+      type: object
+      required: [category, categoryAr, allocated, spent, limit]
+      properties:
+        category:
+          type: string
+        categoryAr:
+          type: string
+        allocated:
+          type: number
+        spent:
+          type: number
+        limit:
+          type: number
+        icon:
+          type: string
+
+    SimulationStartInput:
+      type: object
+      required: [monthlyIncome]
+      properties:
+        monthlyIncome:
+          type: number
+        difficulty:
+          type: string
+          enum: [easy, medium, hard]
+
+    BudgetAllocationInput:
+      type: object
+      required: [allocations]
+      properties:
+        allocations:
+          type: array
+          items:
+            type: object
+            required: [category, amount]
+            properties:
+              category:
+                type: string
+              amount:
+                type: number
+
+    EconomicEvent:
+      type: object
+      required: [id, titleEn, titleAr, descriptionEn, descriptionAr, type, severity, options, expiresAt]
+      properties:
+        id:
+          type: integer
+        titleEn:
+          type: string
+        titleAr:
+          type: string
+        descriptionEn:
+          type: string
+        descriptionAr:
+          type: string
+        type:
+          type: string
+          enum: [market_crash, bonus, expense, investment, emergency, opportunity]
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        impact:
+          type: number
+          description: Financial impact amount
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventOption"
+        expiresAt:
+          type: ["string", "null"]
+
+    EventOption:
+      type: object
+      required: [id, labelEn, labelAr, xpReward, riskLevel]
+      properties:
+        id:
+          type: string
+        labelEn:
+          type: string
+        labelAr:
+          type: string
+        xpReward:
+          type: integer
+        riskLevel:
+          type: string
+          enum: [safe, moderate, risky]
+        expectedOutcomeEn:
+          type: string
+        expectedOutcomeAr:
+          type: string
+
+    DecisionInput:
+      type: object
+      required: [optionId]
+      properties:
+        optionId:
+          type: string
+
+    DecisionResult:
+      type: object
+      required: [xpEarned, coinsEarned, budgetImpact, feedbackEn, feedbackAr, newHealthScore]
+      properties:
+        xpEarned:
+          type: integer
+        coinsEarned:
+          type: integer
+        budgetImpact:
+          type: number
+        feedbackEn:
+          type: string
+        feedbackAr:
+          type: string
+        newHealthScore:
+          type: integer
+        leveledUp:
+          type: boolean
+        newLevel:
+          type: ["integer", "null"]
+
+    DecisionHistoryItem:
+      type: object
+      required: [id, eventTitleEn, eventTitleAr, chosenOptionEn, chosenOptionAr, xpEarned, budgetImpact, createdAt]
+      properties:
+        id:
+          type: integer
+        eventTitleEn:
+          type: string
+        eventTitleAr:
+          type: string
+        chosenOptionEn:
+          type: string
+        chosenOptionAr:
+          type: string
+        xpEarned:
+          type: integer
+        budgetImpact:
+          type: number
+        createdAt:
+          type: string
+
+    ChatMessage:
+      type: object
+      required: [id, role, contentEn, contentAr, createdAt]
+      properties:
+        id:
+          type: integer
+        role:
+          type: string
+          enum: [user, assistant]
+        contentEn:
+          type: string
+        contentAr:
+          type: string
+        createdAt:
+          type: string
+
+    ChatMessageInput:
+      type: object
+      required: [message, language]
+      properties:
+        message:
+          type: string
+        language:
+          type: string
+          enum: [ar, en]
+
+    AIInsight:
+      type: object
+      required: [summaryEn, summaryAr, tips, score]
+      properties:
+        summaryEn:
+          type: string
+        summaryAr:
+          type: string
+        tips:
+          type: array
+          items:
+            $ref: "#/components/schemas/AITip"
+        score:
+          type: integer
+        trend:
+          type: string
+          enum: [improving, stable, declining]
+
+    AITip:
+      type: object
+      required: [titleEn, titleAr, descriptionEn, descriptionAr, priority]
+      properties:
+        titleEn:
+          type: string
+        titleAr:
+          type: string
+        descriptionEn:
+          type: string
+        descriptionAr:
+          type: string
+        priority:
+          type: string
+          enum: [high, medium, low]
+
+    Reward:
+      type: object
+      required: [id, titleEn, titleAr, descriptionEn, descriptionAr, coinsRequired, type, partnerName, isAvailable]
+      properties:
+        id:
+          type: integer
+        titleEn:
+          type: string
+        titleAr:
+          type: string
+        descriptionEn:
+          type: string
+        descriptionAr:
+          type: string
+        coinsRequired:
+          type: integer
+        type:
+          type: string
+          enum: [cashback, discount, voucher, free_service, investment]
+        partnerName:
+          type: string
+        partnerLogoUrl:
+          type: ["string", "null"]
+        isAvailable:
+          type: boolean
+        expiresAt:
+          type: ["string", "null"]
+
+    UserReward:
+      type: object
+      required: [id, reward, status, earnedAt]
+      properties:
+        id:
+          type: integer
+        reward:
+          $ref: "#/components/schemas/Reward"
+        status:
+          type: string
+          enum: [available, redeemed, expired]
+        earnedAt:
+          type: string
+        redeemedAt:
+          type: ["string", "null"]
+
+    RedemptionResult:
+      type: object
+      required: [success, redemptionCode, messageEn, messageAr]
+      properties:
+        success:
+          type: boolean
+        redemptionCode:
+          type: ["string", "null"]
+        messageEn:
+          type: string
+        messageAr:
+          type: string
+
+    Leaderboard:
+      type: object
+      required: [entries, userRank, updatedAt]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardEntry"
+        userRank:
+          type: integer
+        updatedAt:
+          type: string
+
+    LeaderboardEntry:
+      type: object
+      required: [rank, userId, username, xp, level, avatarUrl, badge, isCurrentUser]
+      properties:
+        rank:
+          type: integer
+        userId:
+          type: integer
+        username:
+          type: string
+        xp:
+          type: integer
+        level:
+          type: integer
+        avatarUrl:
+          type: ["string", "null"]
+        badge:
+          type: ["string", "null"]
+        isCurrentUser:
+          type: boolean
+        weeklyXpGain:
+          type: integer

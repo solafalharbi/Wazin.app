@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Wazin وازِن"
+version = "1.0.0"
+id = "artifacts/wazin"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22984
+
+[services.development]
+run = "pnpm --filter @workspace/wazin run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wazin", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/wazin/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22984"
+BASE_PATH = "/"
