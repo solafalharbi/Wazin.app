@@ -65,15 +65,14 @@ export interface UserProfileUpdate {
 
 export interface SpendingCategory {
   category: string;
-  categoryAr?: string;
+  categoryAr: string;
   amount: number;
   percentage: number;
-  color?: string;
+  color: string;
 }
 
 export interface DashboardSummary {
   user: UserProfile;
-  /** Budget health score 0-100 */
   budgetHealth: number;
   xpToNextLevel: number;
   activeChallenges: number;
@@ -222,7 +221,6 @@ export interface EconomicEvent {
   descriptionAr: string;
   type: EconomicEventType;
   severity: EconomicEventSeverity;
-  /** Financial impact amount */
   impact?: number;
   options: EventOption[];
   /** @nullable */
@@ -390,5 +388,173 @@ export interface Leaderboard {
   entries: LeaderboardEntry[];
   userRank: number;
   updatedAt: string;
+}
+
+export type AiScenarioOptionRiskLevel = typeof AiScenarioOptionRiskLevel[keyof typeof AiScenarioOptionRiskLevel];
+
+
+export const AiScenarioOptionRiskLevel = {
+  safe: 'safe',
+  moderate: 'moderate',
+  risky: 'risky',
+} as const;
+
+export interface AiScenarioOption {
+  id: string;
+  labelEn: string;
+  labelAr: string;
+  riskLevel: AiScenarioOptionRiskLevel;
+  xpReward: number;
+  outcomePreviewEn?: string;
+  outcomePreviewAr?: string;
+}
+
+export type AiScenarioSeverity = typeof AiScenarioSeverity[keyof typeof AiScenarioSeverity];
+
+
+export const AiScenarioSeverity = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  critical: 'critical',
+} as const;
+
+export interface AiScenario {
+  id: number;
+  titleEn: string;
+  titleAr: string;
+  descriptionEn: string;
+  descriptionAr: string;
+  type: string;
+  severity: AiScenarioSeverity;
+  impactAmount: number;
+  options: AiScenarioOption[];
+  isActive: boolean;
+  responded: boolean;
+  /** @nullable */
+  chosenOptionId?: string | null;
+  /** @nullable */
+  feedbackEn?: string | null;
+  /** @nullable */
+  feedbackAr?: string | null;
+  xpEarned?: number;
+  createdAt: string;
+}
+
+export interface GenerateScenarioInput {
+  forceType?: string;
+}
+
+export interface ScenarioResponseInput {
+  optionId: string;
+}
+
+export interface ScenarioResponseResult {
+  xpEarned: number;
+  coinsEarned: number;
+  feedbackEn: string;
+  feedbackAr: string;
+  impactSummaryEn: string;
+  impactSummaryAr: string;
+  leveledUp?: boolean;
+  /** @nullable */
+  newLevel?: number | null;
+}
+
+export interface PersonalityTrait {
+  nameEn: string;
+  nameAr: string;
+  score: number;
+  descriptionEn?: string;
+  descriptionAr?: string;
+}
+
+export interface PersonalityStrength {
+  en: string;
+  ar: string;
+}
+
+export interface PersonalityAnalysis {
+  id: number;
+  personalityTypeEn: string;
+  personalityTypeAr: string;
+  descriptionEn: string;
+  descriptionAr: string;
+  strengths: PersonalityStrength[];
+  improvements: PersonalityStrength[];
+  traits: PersonalityTrait[];
+  overallScore: number;
+  badgeEn: string;
+  badgeAr: string;
+  createdAt: string;
+}
+
+export interface YearlyProjection {
+  year: number;
+  savings: number;
+  netWorth: number;
+  income: number;
+  expenses: number;
+  /** @nullable */
+  milestone?: string | null;
+  /** @nullable */
+  milestoneAr?: string | null;
+}
+
+export type FinancialRiskSeverity = typeof FinancialRiskSeverity[keyof typeof FinancialRiskSeverity];
+
+
+export const FinancialRiskSeverity = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+} as const;
+
+export interface FinancialRisk {
+  titleEn: string;
+  titleAr: string;
+  descriptionEn: string;
+  descriptionAr: string;
+  severity: FinancialRiskSeverity;
+  probability: number;
+}
+
+export interface FinancialGoal {
+  titleEn: string;
+  titleAr: string;
+  descriptionEn: string;
+  descriptionAr: string;
+  targetYear: number;
+  targetAmount: number;
+  isAchievable?: boolean;
+}
+
+export type TwinScenarioType = typeof TwinScenarioType[keyof typeof TwinScenarioType];
+
+
+export const TwinScenarioType = {
+  optimistic: 'optimistic',
+  base: 'base',
+  pessimistic: 'pessimistic',
+} as const;
+
+export interface TwinScenario {
+  type: TwinScenarioType;
+  labelEn: string;
+  labelAr: string;
+  projections: YearlyProjection[];
+}
+
+export interface FinancialTwin {
+  id: number;
+  summaryEn: string;
+  summaryAr: string;
+  currentMonthlyIncome: number;
+  currentSavingsRate: number;
+  projection: YearlyProjection[];
+  risks: FinancialRisk[];
+  goals: FinancialGoal[];
+  scenarios: TwinScenario[];
+  createdAt: string;
 }
 

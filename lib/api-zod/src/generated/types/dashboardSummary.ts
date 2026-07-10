@@ -10,7 +10,6 @@ import type { UserProfile } from './userProfile';
 
 export interface DashboardSummary {
   user: UserProfile;
-  /** Budget health score 0-100 */
   budgetHealth: number;
   xpToNextLevel: number;
   activeChallenges: number;

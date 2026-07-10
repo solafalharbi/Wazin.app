@@ -22,6 +22,7 @@ import type {
 import type {
   AIInsight,
   ActivityItem,
+  AiScenario,
   BudgetAllocationInput,
   BudgetStats,
   ChatMessage,
@@ -31,10 +32,15 @@ import type {
   DecisionInput,
   DecisionResult,
   EconomicEvent,
+  FinancialTwin,
+  GenerateScenarioInput,
   HealthStatus,
   Leaderboard,
+  PersonalityAnalysis,
   RedemptionResult,
   Reward,
+  ScenarioResponseInput,
+  ScenarioResponseResult,
   SimulationStartInput,
   SimulationState,
   UserProfile,
@@ -232,7 +238,7 @@ export const getUpdateUserProfileUrl = () => {
 }
 
 /**
- * @summary Update user profile (language, theme, etc.)
+ * @summary Update user profile
  */
 export const updateUserProfile = async (userProfileUpdate: UserProfileUpdate, options?: RequestInit): Promise<UserProfile> => {
 
@@ -280,7 +286,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type UpdateUserProfileMutationError = ErrorType<unknown>
 
     /**
- * @summary Update user profile (language, theme, etc.)
+ * @summary Update user profile
  */
 export const useUpdateUserProfile = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserProfile>>, TError,{data: BodyType<UserProfileUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -302,7 +308,7 @@ export const getGetDashboardSummaryUrl = () => {
 }
 
 /**
- * @summary Get dashboard summary - XP, budget health, stats
+ * @summary Get dashboard summary
  */
 export const getDashboardSummary = async ( options?: RequestInit): Promise<DashboardSummary> => {
 
@@ -349,7 +355,7 @@ export type GetDashboardSummaryQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get dashboard summary - XP, budget health, stats
+ * @summary Get dashboard summary
  */
 
 export function useGetDashboardSummary<TData = Awaited<ReturnType<typeof getDashboardSummary>>, TError = ErrorType<unknown>>(
@@ -379,7 +385,7 @@ export const getGetActivityFeedUrl = () => {
 }
 
 /**
- * @summary Recent user activity feed
+ * @summary Recent activity feed
  */
 export const getActivityFeed = async ( options?: RequestInit): Promise<ActivityItem[]> => {
 
@@ -426,7 +432,7 @@ export type GetActivityFeedQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Recent user activity feed
+ * @summary Recent activity feed
  */
 
 export function useGetActivityFeed<TData = Awaited<ReturnType<typeof getActivityFeed>>, TError = ErrorType<unknown>>(
@@ -456,7 +462,7 @@ export const getGetBudgetStatsUrl = () => {
 }
 
 /**
- * @summary Budget performance over time (chart data)
+ * @summary Budget performance chart data
  */
 export const getBudgetStats = async ( options?: RequestInit): Promise<BudgetStats> => {
 
@@ -503,7 +509,7 @@ export type GetBudgetStatsQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Budget performance over time (chart data)
+ * @summary Budget performance chart data
  */
 
 export function useGetBudgetStats<TData = Awaited<ReturnType<typeof getBudgetStats>>, TError = ErrorType<unknown>>(
@@ -533,7 +539,7 @@ export const getGetSimulationStateUrl = () => {
 }
 
 /**
- * @summary Get current game simulation state
+ * @summary Get current simulation state
  */
 export const getSimulationState = async ( options?: RequestInit): Promise<SimulationState> => {
 
@@ -580,7 +586,7 @@ export type GetSimulationStateQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get current game simulation state
+ * @summary Get current simulation state
  */
 
 export function useGetSimulationState<TData = Awaited<ReturnType<typeof getSimulationState>>, TError = ErrorType<unknown>>(
@@ -750,7 +756,7 @@ export const getGetEconomicEventsUrl = () => {
 }
 
 /**
- * @summary Get active economic events/challenges
+ * @summary Get active economic events
  */
 export const getEconomicEvents = async ( options?: RequestInit): Promise<EconomicEvent[]> => {
 
@@ -797,7 +803,7 @@ export type GetEconomicEventsQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get active economic events/challenges
+ * @summary Get active economic events
  */
 
 export function useGetEconomicEvents<TData = Awaited<ReturnType<typeof getEconomicEvents>>, TError = ErrorType<unknown>>(
@@ -898,7 +904,7 @@ export const getGetDecisionHistoryUrl = () => {
 }
 
 /**
- * @summary Get past decisions and their outcomes
+ * @summary Get past decisions
  */
 export const getDecisionHistory = async ( options?: RequestInit): Promise<DecisionHistoryItem[]> => {
 
@@ -945,7 +951,7 @@ export type GetDecisionHistoryQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get past decisions and their outcomes
+ * @summary Get past decisions
  */
 
 export function useGetDecisionHistory<TData = Awaited<ReturnType<typeof getDecisionHistory>>, TError = ErrorType<unknown>>(
@@ -1122,7 +1128,7 @@ export const getGetAIInsightUrl = () => {
 }
 
 /**
- * @summary Get personalized AI financial insight for dashboard
+ * @summary Get personalized AI financial insight
  */
 export const getAIInsight = async ( options?: RequestInit): Promise<AIInsight> => {
 
@@ -1169,7 +1175,7 @@ export type GetAIInsightQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get personalized AI financial insight for dashboard
+ * @summary Get personalized AI financial insight
  */
 
 export function useGetAIInsight<TData = Awaited<ReturnType<typeof getAIInsight>>, TError = ErrorType<unknown>>(
@@ -1199,7 +1205,7 @@ export const getGetRewardsUrl = () => {
 }
 
 /**
- * @summary Get available rewards catalog (Alinma Bank offers)
+ * @summary Get rewards catalog
  */
 export const getRewards = async ( options?: RequestInit): Promise<Reward[]> => {
 
@@ -1246,7 +1252,7 @@ export type GetRewardsQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get available rewards catalog (Alinma Bank offers)
+ * @summary Get rewards catalog
  */
 
 export function useGetRewards<TData = Awaited<ReturnType<typeof getRewards>>, TError = ErrorType<unknown>>(
@@ -1276,7 +1282,7 @@ export const getGetUserRewardsUrl = () => {
 }
 
 /**
- * @summary Get user's earned and redeemed rewards
+ * @summary Get user's earned rewards
  */
 export const getUserRewards = async ( options?: RequestInit): Promise<UserReward[]> => {
 
@@ -1323,7 +1329,7 @@ export type GetUserRewardsQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get user's earned and redeemed rewards
+ * @summary Get user's earned rewards
  */
 
 export function useGetUserRewards<TData = Awaited<ReturnType<typeof getUserRewards>>, TError = ErrorType<unknown>>(
@@ -1353,7 +1359,7 @@ export const getRedeemRewardUrl = (rewardId: number,) => {
 }
 
 /**
- * @summary Redeem a virtual reward for a real offer
+ * @summary Redeem a reward
  */
 export const redeemReward = async (rewardId: number, options?: RequestInit): Promise<RedemptionResult> => {
 
@@ -1401,7 +1407,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type RedeemRewardMutationError = ErrorType<unknown>
 
     /**
- * @summary Redeem a virtual reward for a real offer
+ * @summary Redeem a reward
  */
 export const useRedeemReward = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemReward>>, TError,{rewardId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -1423,7 +1429,7 @@ export const getGetLeaderboardUrl = () => {
 }
 
 /**
- * @summary Get global leaderboard rankings
+ * @summary Get leaderboard rankings
  */
 export const getLeaderboard = async ( options?: RequestInit): Promise<Leaderboard> => {
 
@@ -1470,7 +1476,7 @@ export type GetLeaderboardQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get global leaderboard rankings
+ * @summary Get leaderboard rankings
  */
 
 export function useGetLeaderboard<TData = Awaited<ReturnType<typeof getLeaderboard>>, TError = ErrorType<unknown>>(
@@ -1490,4 +1496,516 @@ export function useGetLeaderboard<TData = Awaited<ReturnType<typeof getLeaderboa
 
 
 
+
+export const getGetActiveScenariosUrl = () => {
+
+
+
+
+  return `/api/scenarios/active`
+}
+
+/**
+ * @summary Get active AI-generated scenarios for this user
+ */
+export const getActiveScenarios = async ( options?: RequestInit): Promise<AiScenario[]> => {
+
+  return customFetch<AiScenario[]>(getGetActiveScenariosUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetActiveScenariosQueryKey = () => {
+    return [
+    `/api/scenarios/active`
+    ] as const;
+    }
+
+
+export const getGetActiveScenariosQueryOptions = <TData = Awaited<ReturnType<typeof getActiveScenarios>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getActiveScenarios>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetActiveScenariosQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getActiveScenarios>>> = ({ signal }) => getActiveScenarios({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getActiveScenarios>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetActiveScenariosQueryResult = NonNullable<Awaited<ReturnType<typeof getActiveScenarios>>>
+export type GetActiveScenariosQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get active AI-generated scenarios for this user
+ */
+
+export function useGetActiveScenarios<TData = Awaited<ReturnType<typeof getActiveScenarios>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getActiveScenarios>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetActiveScenariosQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGenerateScenarioUrl = () => {
+
+
+
+
+  return `/api/scenarios/generate`
+}
+
+/**
+ * @summary AI generates a new personalized financial scenario
+ */
+export const generateScenario = async (generateScenarioInput: GenerateScenarioInput, options?: RequestInit): Promise<AiScenario> => {
+
+  return customFetch<AiScenario>(getGenerateScenarioUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(generateScenarioInput)
+  }
+);}
+
+
+
+
+export const getGenerateScenarioMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateScenario>>, TError,{data: BodyType<GenerateScenarioInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateScenario>>, TError,{data: BodyType<GenerateScenarioInput>}, TContext> => {
+
+const mutationKey = ['generateScenario'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateScenario>>, {data: BodyType<GenerateScenarioInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  generateScenario(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateScenarioMutationResult = NonNullable<Awaited<ReturnType<typeof generateScenario>>>
+    export type GenerateScenarioMutationBody = BodyType<GenerateScenarioInput>
+    export type GenerateScenarioMutationError = ErrorType<unknown>
+
+    /**
+ * @summary AI generates a new personalized financial scenario
+ */
+export const useGenerateScenario = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateScenario>>, TError,{data: BodyType<GenerateScenarioInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateScenario>>,
+        TError,
+        {data: BodyType<GenerateScenarioInput>},
+        TContext
+      > => {
+      return useMutation(getGenerateScenarioMutationOptions(options));
+    }
+
+export const getRespondToScenarioUrl = (scenarioId: number,) => {
+
+
+
+
+  return `/api/scenarios/${scenarioId}/respond`
+}
+
+/**
+ * @summary Respond to an AI-generated scenario
+ */
+export const respondToScenario = async (scenarioId: number,
+    scenarioResponseInput: ScenarioResponseInput, options?: RequestInit): Promise<ScenarioResponseResult> => {
+
+  return customFetch<ScenarioResponseResult>(getRespondToScenarioUrl(scenarioId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(scenarioResponseInput)
+  }
+);}
+
+
+
+
+export const getRespondToScenarioMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondToScenario>>, TError,{scenarioId: number;data: BodyType<ScenarioResponseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof respondToScenario>>, TError,{scenarioId: number;data: BodyType<ScenarioResponseInput>}, TContext> => {
+
+const mutationKey = ['respondToScenario'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof respondToScenario>>, {scenarioId: number;data: BodyType<ScenarioResponseInput>}> = (props) => {
+          const {scenarioId,data} = props ?? {};
+
+          return  respondToScenario(scenarioId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RespondToScenarioMutationResult = NonNullable<Awaited<ReturnType<typeof respondToScenario>>>
+    export type RespondToScenarioMutationBody = BodyType<ScenarioResponseInput>
+    export type RespondToScenarioMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Respond to an AI-generated scenario
+ */
+export const useRespondToScenario = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondToScenario>>, TError,{scenarioId: number;data: BodyType<ScenarioResponseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof respondToScenario>>,
+        TError,
+        {scenarioId: number;data: BodyType<ScenarioResponseInput>},
+        TContext
+      > => {
+      return useMutation(getRespondToScenarioMutationOptions(options));
+    }
+
+export const getGetPersonalityAnalysisUrl = () => {
+
+
+
+
+  return `/api/analysis/personality`
+}
+
+/**
+ * @summary Get the latest personality analysis report
+ */
+export const getPersonalityAnalysis = async ( options?: RequestInit): Promise<PersonalityAnalysis> => {
+
+  return customFetch<PersonalityAnalysis>(getGetPersonalityAnalysisUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPersonalityAnalysisQueryKey = () => {
+    return [
+    `/api/analysis/personality`
+    ] as const;
+    }
+
+
+export const getGetPersonalityAnalysisQueryOptions = <TData = Awaited<ReturnType<typeof getPersonalityAnalysis>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPersonalityAnalysis>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPersonalityAnalysisQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPersonalityAnalysis>>> = ({ signal }) => getPersonalityAnalysis({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPersonalityAnalysis>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPersonalityAnalysisQueryResult = NonNullable<Awaited<ReturnType<typeof getPersonalityAnalysis>>>
+export type GetPersonalityAnalysisQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get the latest personality analysis report
+ */
+
+export function useGetPersonalityAnalysis<TData = Awaited<ReturnType<typeof getPersonalityAnalysis>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPersonalityAnalysis>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPersonalityAnalysisQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGeneratePersonalityAnalysisUrl = () => {
+
+
+
+
+  return `/api/analysis/personality/generate`
+}
+
+/**
+ * @summary AI generates a fresh personality analysis from decision history
+ */
+export const generatePersonalityAnalysis = async ( options?: RequestInit): Promise<PersonalityAnalysis> => {
+
+  return customFetch<PersonalityAnalysis>(getGeneratePersonalityAnalysisUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getGeneratePersonalityAnalysisMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generatePersonalityAnalysis>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generatePersonalityAnalysis>>, TError,void, TContext> => {
+
+const mutationKey = ['generatePersonalityAnalysis'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generatePersonalityAnalysis>>, void> = () => {
+
+
+          return  generatePersonalityAnalysis(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GeneratePersonalityAnalysisMutationResult = NonNullable<Awaited<ReturnType<typeof generatePersonalityAnalysis>>>
+
+    export type GeneratePersonalityAnalysisMutationError = ErrorType<unknown>
+
+    /**
+ * @summary AI generates a fresh personality analysis from decision history
+ */
+export const useGeneratePersonalityAnalysis = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generatePersonalityAnalysis>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generatePersonalityAnalysis>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getGeneratePersonalityAnalysisMutationOptions(options));
+    }
+
+export const getGetTwinProjectionUrl = () => {
+
+
+
+
+  return `/api/twin/projection`
+}
+
+/**
+ * @summary Get Financial Twin 5–10 year projection
+ */
+export const getTwinProjection = async ( options?: RequestInit): Promise<FinancialTwin> => {
+
+  return customFetch<FinancialTwin>(getGetTwinProjectionUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTwinProjectionQueryKey = () => {
+    return [
+    `/api/twin/projection`
+    ] as const;
+    }
+
+
+export const getGetTwinProjectionQueryOptions = <TData = Awaited<ReturnType<typeof getTwinProjection>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTwinProjection>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTwinProjectionQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTwinProjection>>> = ({ signal }) => getTwinProjection({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTwinProjection>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTwinProjectionQueryResult = NonNullable<Awaited<ReturnType<typeof getTwinProjection>>>
+export type GetTwinProjectionQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get Financial Twin 5–10 year projection
+ */
+
+export function useGetTwinProjection<TData = Awaited<ReturnType<typeof getTwinProjection>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTwinProjection>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTwinProjectionQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGenerateTwinProjectionUrl = () => {
+
+
+
+
+  return `/api/twin/generate`
+}
+
+/**
+ * @summary AI generates/refreshes the Financial Twin projection
+ */
+export const generateTwinProjection = async ( options?: RequestInit): Promise<FinancialTwin> => {
+
+  return customFetch<FinancialTwin>(getGenerateTwinProjectionUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getGenerateTwinProjectionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateTwinProjection>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateTwinProjection>>, TError,void, TContext> => {
+
+const mutationKey = ['generateTwinProjection'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateTwinProjection>>, void> = () => {
+
+
+          return  generateTwinProjection(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateTwinProjectionMutationResult = NonNullable<Awaited<ReturnType<typeof generateTwinProjection>>>
+
+    export type GenerateTwinProjectionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary AI generates/refreshes the Financial Twin projection
+ */
+export const useGenerateTwinProjection = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateTwinProjection>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateTwinProjection>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getGenerateTwinProjectionMutationOptions(options));
+    }
 

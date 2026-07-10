@@ -7,6 +7,9 @@ import eventsRouter from "./events";
 import aiRouter from "./ai";
 import rewardsRouter from "./rewards";
 import leaderboardRouter from "./leaderboard";
+import scenariosRouter from "./scenarios";
+import analysisRouter from "./analysis";
+import twinRouter from "./twin";
 
 const router: IRouter = Router();
 
@@ -18,5 +21,8 @@ router.use(eventsRouter);
 router.use(aiRouter);
 router.use(rewardsRouter);
 router.use(leaderboardRouter);
+router.use(scenariosRouter);
+router.use(analysisRouter);
+router.use(twinRouter);
 
 export default router;

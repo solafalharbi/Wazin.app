@@ -6,10 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface SpendingCategory {
-  category: string;
-  categoryAr: string;
-  amount: number;
-  percentage: number;
-  color: string;
+export interface PersonalityStrength {
+  en: string;
+  ar: string;
 }

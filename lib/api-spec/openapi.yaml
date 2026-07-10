@@ -23,6 +23,12 @@ tags:
     description: Rewards and Alinma Bank offers
   - name: leaderboard
     description: Leaderboard rankings
+  - name: scenarios
+    description: AI-generated dynamic financial scenarios
+  - name: analysis
+    description: AI financial personality analysis
+  - name: twin
+    description: Financial Twin projections
 
 paths:
   /healthz:
@@ -53,7 +59,7 @@ paths:
     patch:
       operationId: updateUserProfile
       tags: [user]
-      summary: Update user profile (language, theme, etc.)
+      summary: Update user profile
       requestBody:
         required: true
         content:
@@ -72,7 +78,7 @@ paths:
     get:
       operationId: getDashboardSummary
       tags: [dashboard]
-      summary: Get dashboard summary - XP, budget health, stats
+      summary: Get dashboard summary
       responses:
         "200":
           description: Dashboard summary
@@ -85,7 +91,7 @@ paths:
     get:
       operationId: getActivityFeed
       tags: [dashboard]
-      summary: Recent user activity feed
+      summary: Recent activity feed
       responses:
         "200":
           description: Activity feed
@@ -100,7 +106,7 @@ paths:
     get:
       operationId: getBudgetStats
       tags: [dashboard]
-      summary: Budget performance over time (chart data)
+      summary: Budget performance chart data
       responses:
         "200":
           description: Budget stats
@@ -113,7 +119,7 @@ paths:
     get:
       operationId: getSimulationState
       tags: [simulation]
-      summary: Get current game simulation state
+      summary: Get current simulation state
       responses:
         "200":
           description: Simulation state
@@ -164,10 +170,10 @@ paths:
     get:
       operationId: getEconomicEvents
       tags: [events]
-      summary: Get active economic events/challenges
+      summary: Get active economic events
       responses:
         "200":
-          description: List of events
+          description: Events list
           content:
             application/json:
               schema:
@@ -194,7 +200,7 @@ paths:
               $ref: "#/components/schemas/DecisionInput"
       responses:
         "200":
-          description: Decision result with XP and AI feedback
+          description: Decision result
           content:
             application/json:
               schema:
@@ -204,7 +210,7 @@ paths:
     get:
       operationId: getDecisionHistory
       tags: [events]
-      summary: Get past decisions and their outcomes
+      summary: Get past decisions
       responses:
         "200":
           description: Decision history
@@ -251,7 +257,7 @@ paths:
     get:
       operationId: getAIInsight
       tags: [ai]
-      summary: Get personalized AI financial insight for dashboard
+      summary: Get personalized AI financial insight
       responses:
         "200":
           description: AI insight
@@ -264,7 +270,7 @@ paths:
     get:
       operationId: getRewards
       tags: [rewards]
-      summary: Get available rewards catalog (Alinma Bank offers)
+      summary: Get rewards catalog
       responses:
         "200":
           description: Rewards list
@@ -279,7 +285,7 @@ paths:
     get:
       operationId: getUserRewards
       tags: [rewards]
-      summary: Get user's earned and redeemed rewards
+      summary: Get user's earned rewards
       responses:
         "200":
           description: User rewards
@@ -294,7 +300,7 @@ paths:
     post:
       operationId: redeemReward
       tags: [rewards]
-      summary: Redeem a virtual reward for a real offer
+      summary: Redeem a reward
       parameters:
         - name: rewardId
           in: path
@@ -303,7 +309,7 @@ paths:
             type: integer
       responses:
         "200":
-          description: Redemption confirmation
+          description: Redemption result
           content:
             application/json:
               schema:
@@ -313,7 +319,7 @@ paths:
     get:
       operationId: getLeaderboard
       tags: [leaderboard]
-      summary: Get global leaderboard rankings
+      summary: Get leaderboard rankings
       responses:
         "200":
           description: Leaderboard
@@ -321,6 +327,123 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Leaderboard"
+
+  # ── NEW: AI Dynamic Scenarios ──────────────────────────────────────────────
+
+  /scenarios/active:
+    get:
+      operationId: getActiveScenarios
+      tags: [scenarios]
+      summary: Get active AI-generated scenarios for this user
+      responses:
+        "200":
+          description: Active scenarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiScenario"
+
+  /scenarios/generate:
+    post:
+      operationId: generateScenario
+      tags: [scenarios]
+      summary: AI generates a new personalized financial scenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateScenarioInput"
+      responses:
+        "200":
+          description: Generated scenario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiScenario"
+
+  /scenarios/{scenarioId}/respond:
+    post:
+      operationId: respondToScenario
+      tags: [scenarios]
+      summary: Respond to an AI-generated scenario
+      parameters:
+        - name: scenarioId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScenarioResponseInput"
+      responses:
+        "200":
+          description: Scenario response result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioResponseResult"
+
+  # ── NEW: Financial Personality Analysis ───────────────────────────────────
+
+  /analysis/personality:
+    get:
+      operationId: getPersonalityAnalysis
+      tags: [analysis]
+      summary: Get the latest personality analysis report
+      responses:
+        "200":
+          description: Personality analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonalityAnalysis"
+
+  /analysis/personality/generate:
+    post:
+      operationId: generatePersonalityAnalysis
+      tags: [analysis]
+      summary: AI generates a fresh personality analysis from decision history
+      responses:
+        "200":
+          description: Generated personality analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonalityAnalysis"
+
+  # ── NEW: Financial Twin ────────────────────────────────────────────────────
+
+  /twin/projection:
+    get:
+      operationId: getTwinProjection
+      tags: [twin]
+      summary: Get Financial Twin 5–10 year projection
+      responses:
+        "200":
+          description: Financial twin projection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialTwin"
+
+  /twin/generate:
+    post:
+      operationId: generateTwinProjection
+      tags: [twin]
+      summary: AI generates/refreshes the Financial Twin projection
+      responses:
+        "200":
+          description: Updated financial twin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialTwin"
 
 components:
   schemas:
@@ -335,42 +458,24 @@ components:
       type: object
       required: [id, username, email, xp, level, coins, language, theme, avatarUrl, joinedAt]
       properties:
-        id:
-          type: integer
-        username:
-          type: string
-        email:
-          type: string
-        xp:
-          type: integer
-        level:
-          type: integer
-        coins:
-          type: integer
-        language:
-          type: string
-          enum: [ar, en]
-        theme:
-          type: string
-          enum: [light, dark]
-        avatarUrl:
-          type: ["string", "null"]
-        badge:
-          type: ["string", "null"]
-        joinedAt:
-          type: string
+        id: { type: integer }
+        username: { type: string }
+        email: { type: string }
+        xp: { type: integer }
+        level: { type: integer }
+        coins: { type: integer }
+        language: { type: string, enum: [ar, en] }
+        theme: { type: string, enum: [light, dark] }
+        avatarUrl: { type: ["string", "null"] }
+        badge: { type: ["string", "null"] }
+        joinedAt: { type: string }
 
     UserProfileUpdate:
       type: object
       properties:
-        language:
-          type: string
-          enum: [ar, en]
-        theme:
-          type: string
-          enum: [light, dark]
-        username:
-          type: string
+        language: { type: string, enum: [ar, en] }
+        theme: { type: string, enum: [light, dark] }
+        username: { type: string }
 
     DashboardSummary:
       type: object
@@ -378,21 +483,13 @@ components:
       properties:
         user:
           $ref: "#/components/schemas/UserProfile"
-        budgetHealth:
-          type: integer
-          description: Budget health score 0-100
-        xpToNextLevel:
-          type: integer
-        activeChallenges:
-          type: integer
-        totalRewards:
-          type: integer
-        weeklyXpGain:
-          type: integer
-        rank:
-          type: integer
-        savingsRate:
-          type: number
+        budgetHealth: { type: integer }
+        xpToNextLevel: { type: integer }
+        activeChallenges: { type: integer }
+        totalRewards: { type: integer }
+        weeklyXpGain: { type: integer }
+        rank: { type: integer }
+        savingsRate: { type: number }
         spendingBreakdown:
           type: array
           items:
@@ -400,42 +497,27 @@ components:
 
     SpendingCategory:
       type: object
-      required: [category, amount, percentage]
+      required: [category, categoryAr, amount, percentage, color]
       properties:
-        category:
-          type: string
-        categoryAr:
-          type: string
-        amount:
-          type: number
-        percentage:
-          type: number
-        color:
-          type: string
+        category: { type: string }
+        categoryAr: { type: string }
+        amount: { type: number }
+        percentage: { type: number }
+        color: { type: string }
 
     ActivityItem:
       type: object
       required: [id, type, titleEn, titleAr, descriptionEn, descriptionAr, xpChange, createdAt]
       properties:
-        id:
-          type: integer
-        type:
-          type: string
-          enum: [decision, reward, level_up, challenge, ai_advice]
-        titleEn:
-          type: string
-        titleAr:
-          type: string
-        descriptionEn:
-          type: string
-        descriptionAr:
-          type: string
-        xpChange:
-          type: integer
-        coinsChange:
-          type: ["integer", "null"]
-        createdAt:
-          type: string
+        id: { type: integer }
+        type: { type: string, enum: [decision, reward, level_up, challenge, ai_advice] }
+        titleEn: { type: string }
+        titleAr: { type: string }
+        descriptionEn: { type: string }
+        descriptionAr: { type: string }
+        xpChange: { type: integer }
+        coinsChange: { type: ["integer", "null"] }
+        createdAt: { type: string }
 
     BudgetStats:
       type: object
@@ -454,67 +536,45 @@ components:
       type: object
       required: [month, income, expenses, savings]
       properties:
-        month:
-          type: string
-        income:
-          type: number
-        expenses:
-          type: number
-        savings:
-          type: number
+        month: { type: string }
+        income: { type: number }
+        expenses: { type: number }
+        savings: { type: number }
 
     SimulationState:
       type: object
       required: [id, month, year, totalBudget, allocations, healthScore, xpEarned, status]
       properties:
-        id:
-          type: integer
-        month:
-          type: integer
-        year:
-          type: integer
-        totalBudget:
-          type: number
+        id: { type: integer }
+        month: { type: integer }
+        year: { type: integer }
+        totalBudget: { type: number }
         allocations:
           type: array
           items:
             $ref: "#/components/schemas/BudgetAllocation"
-        healthScore:
-          type: integer
-        xpEarned:
-          type: integer
-        status:
-          type: string
-          enum: [active, paused, completed]
-        pendingEvents:
-          type: integer
+        healthScore: { type: integer }
+        xpEarned: { type: integer }
+        status: { type: string, enum: [active, paused, completed] }
+        pendingEvents: { type: integer }
 
     BudgetAllocation:
       type: object
       required: [category, categoryAr, allocated, spent, limit]
       properties:
-        category:
-          type: string
-        categoryAr:
-          type: string
-        allocated:
-          type: number
-        spent:
-          type: number
-        limit:
-          type: number
-        icon:
-          type: string
+        category: { type: string }
+        categoryAr: { type: string }
+        allocated: { type: number }
+        spent: { type: number }
+        limit: { type: number }
+        icon: { type: string }
 
     SimulationStartInput:
       type: object
       required: [monthlyIncome]
       properties:
-        monthlyIncome:
-          type: number
-        difficulty:
-          type: string
-          enum: [easy, medium, hard]
+        monthlyIncome: { type: number }
+        difficulty: { type: string, enum: [easy, medium, hard] }
 
     BudgetAllocationInput:
       type: object
@@ -526,226 +586,146 @@ components:
             type: object
             required: [category, amount]
             properties:
-              category:
-                type: string
-              amount:
-                type: number
+              category: { type: string }
+              amount: { type: number }
 
     EconomicEvent:
       type: object
       required: [id, titleEn, titleAr, descriptionEn, descriptionAr, type, severity, options, expiresAt]
       properties:
-        id:
-          type: integer
-        titleEn:
-          type: string
-        titleAr:
-          type: string
-        descriptionEn:
-          type: string
-        descriptionAr:
-          type: string
-        type:
-          type: string
-          enum: [market_crash, bonus, expense, investment, emergency, opportunity]
-        severity:
-          type: string
-          enum: [low, medium, high, critical]
-        impact:
-          type: number
-          description: Financial impact amount
+        id: { type: integer }
+        titleEn: { type: string }
+        titleAr: { type: string }
+        descriptionEn: { type: string }
+        descriptionAr: { type: string }
+        type: { type: string, enum: [market_crash, bonus, expense, investment, emergency, opportunity] }
+        severity: { type: string, enum: [low, medium, high, critical] }
+        impact: { type: number }
         options:
           type: array
           items:
             $ref: "#/components/schemas/EventOption"
-        expiresAt:
-          type: ["string", "null"]
+        expiresAt: { type: ["string", "null"] }
 
     EventOption:
       type: object
       required: [id, labelEn, labelAr, xpReward, riskLevel]
       properties:
-        id:
-          type: string
-        labelEn:
-          type: string
-        labelAr:
-          type: string
-        xpReward:
-          type: integer
-        riskLevel:
-          type: string
-          enum: [safe, moderate, risky]
-        expectedOutcomeEn:
-          type: string
-        expectedOutcomeAr:
-          type: string
+        id: { type: string }
+        labelEn: { type: string }
+        labelAr: { type: string }
+        xpReward: { type: integer }
+        riskLevel: { type: string, enum: [safe, moderate, risky] }
+        expectedOutcomeEn: { type: string }
+        expectedOutcomeAr: { type: string }
 
     DecisionInput:
       type: object
       required: [optionId]
       properties:
-        optionId:
-          type: string
+        optionId: { type: string }
 
     DecisionResult:
       type: object
       required: [xpEarned, coinsEarned, budgetImpact, feedbackEn, feedbackAr, newHealthScore]
       properties:
-        xpEarned:
-          type: integer
-        coinsEarned:
-          type: integer
-        budgetImpact:
-          type: number
-        feedbackEn:
-          type: string
-        feedbackAr:
-          type: string
-        newHealthScore:
-          type: integer
-        leveledUp:
-          type: boolean
-        newLevel:
-          type: ["integer", "null"]
+        xpEarned: { type: integer }
+        coinsEarned: { type: integer }
+        budgetImpact: { type: number }
+        feedbackEn: { type: string }
+        feedbackAr: { type: string }
+        newHealthScore: { type: integer }
+        leveledUp: { type: boolean }
+        newLevel: { type: ["integer", "null"] }
 
     DecisionHistoryItem:
       type: object
       required: [id, eventTitleEn, eventTitleAr, chosenOptionEn, chosenOptionAr, xpEarned, budgetImpact, createdAt]
       properties:
-        id:
-          type: integer
-        eventTitleEn:
-          type: string
-        eventTitleAr:
-          type: string
-        chosenOptionEn:
-          type: string
-        chosenOptionAr:
-          type: string
-        xpEarned:
-          type: integer
-        budgetImpact:
-          type: number
-        createdAt:
-          type: string
+        id: { type: integer }
+        eventTitleEn: { type: string }
+        eventTitleAr: { type: string }
+        chosenOptionEn: { type: string }
+        chosenOptionAr: { type: string }
+        xpEarned: { type: integer }
+        budgetImpact: { type: number }
+        createdAt: { type: string }
 
     ChatMessage:
       type: object
       required: [id, role, contentEn, contentAr, createdAt]
       properties:
-        id:
-          type: integer
-        role:
-          type: string
-          enum: [user, assistant]
-        contentEn:
-          type: string
-        contentAr:
-          type: string
-        createdAt:
-          type: string
+        id: { type: integer }
+        role: { type: string, enum: [user, assistant] }
+        contentEn: { type: string }
+        contentAr: { type: string }
+        createdAt: { type: string }
 
     ChatMessageInput:
       type: object
       required: [message, language]
       properties:
-        message:
-          type: string
-        language:
-          type: string
-          enum: [ar, en]
+        message: { type: string }
+        language: { type: string, enum: [ar, en] }
 
     AIInsight:
       type: object
       required: [summaryEn, summaryAr, tips, score]
       properties:
-        summaryEn:
-          type: string
-        summaryAr:
-          type: string
+        summaryEn: { type: string }
+        summaryAr: { type: string }
         tips:
           type: array
           items:
             $ref: "#/components/schemas/AITip"
-        score:
-          type: integer
-        trend:
-          type: string
-          enum: [improving, stable, declining]
+        score: { type: integer }
+        trend: { type: string, enum: [improving, stable, declining] }
 
     AITip:
       type: object
       required: [titleEn, titleAr, descriptionEn, descriptionAr, priority]
       properties:
-        titleEn:
-          type: string
-        titleAr:
-          type: string
-        descriptionEn:
-          type: string
-        descriptionAr:
-          type: string
-        priority:
-          type: string
-          enum: [high, medium, low]
+        titleEn: { type: string }
+        titleAr: { type: string }
+        descriptionEn: { type: string }
+        descriptionAr: { type: string }
+        priority: { type: string, enum: [high, medium, low] }
 
     Reward:
       type: object
       required: [id, titleEn, titleAr, descriptionEn, descriptionAr, coinsRequired, type, partnerName, isAvailable]
       properties:
-        id:
-          type: integer
-        titleEn:
-          type: string
-        titleAr:
-          type: string
-        descriptionEn:
-          type: string
-        descriptionAr:
-          type: string
-        coinsRequired:
-          type: integer
-        type:
-          type: string
-          enum: [cashback, discount, voucher, free_service, investment]
-        partnerName:
-          type: string
-        partnerLogoUrl:
-          type: ["string", "null"]
-        isAvailable:
-          type: boolean
-        expiresAt:
-          type: ["string", "null"]
+        id: { type: integer }
+        titleEn: { type: string }
+        titleAr: { type: string }
+        descriptionEn: { type: string }
+        descriptionAr: { type: string }
+        coinsRequired: { type: integer }
+        type: { type: string, enum: [cashback, discount, voucher, free_service, investment] }
+        partnerName: { type: string }
+        partnerLogoUrl: { type: ["string", "null"] }
+        isAvailable: { type: boolean }
+        expiresAt: { type: ["string", "null"] }
 
     UserReward:
       type: object
       required: [id, reward, status, earnedAt]
       properties:
-        id:
-          type: integer
+        id: { type: integer }
         reward:
           $ref: "#/components/schemas/Reward"
-        status:
-          type: string
-          enum: [available, redeemed, expired]
-        earnedAt:
-          type: string
-        redeemedAt:
-          type: ["string", "null"]
+        status: { type: string, enum: [available, redeemed, expired] }
+        earnedAt: { type: string }
+        redeemedAt: { type: ["string", "null"] }
 
     RedemptionResult:
       type: object
       required: [success, redemptionCode, messageEn, messageAr]
       properties:
-        success:
-          type: boolean
-        redemptionCode:
-          type: ["string", "null"]
-        messageEn:
-          type: string
-        messageAr:
-          type: string
+        success: { type: boolean }
+        redemptionCode: { type: ["string", "null"] }
+        messageEn: { type: string }
+        messageAr: { type: string }
 
     Leaderboard:
       type: object
@@ -755,30 +735,202 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LeaderboardEntry"
-        userRank:
-          type: integer
-        updatedAt:
-          type: string
+        userRank: { type: integer }
+        updatedAt: { type: string }
 
     LeaderboardEntry:
       type: object
       required: [rank, userId, username, xp, level, avatarUrl, badge, isCurrentUser]
       properties:
-        rank:
-          type: integer
-        userId:
-          type: integer
-        username:
-          type: string
-        xp:
-          type: integer
-        level:
-          type: integer
-        avatarUrl:
-          type: ["string", "null"]
-        badge:
-          type: ["string", "null"]
-        isCurrentUser:
-          type: boolean
-        weeklyXpGain:
-          type: integer
+        rank: { type: integer }
+        userId: { type: integer }
+        username: { type: string }
+        xp: { type: integer }
+        level: { type: integer }
+        avatarUrl: { type: ["string", "null"] }
+        badge: { type: ["string", "null"] }
+        isCurrentUser: { type: boolean }
+        weeklyXpGain: { type: integer }
+
+    # ── AI Dynamic Scenarios ──────────────────────────────────────────────────
+
+    AiScenarioOption:
+      type: object
+      required: [id, labelEn, labelAr, riskLevel, xpReward]
+      properties:
+        id: { type: string }
+        labelEn: { type: string }
+        labelAr: { type: string }
+        riskLevel: { type: string, enum: [safe, moderate, risky] }
+        xpReward: { type: integer }
+        outcomePreviewEn: { type: string }
+        outcomePreviewAr: { type: string }
+
+    AiScenario:
+      type: object
+      required: [id, titleEn, titleAr, descriptionEn, descriptionAr, type, severity, impactAmount, options, isActive, responded, createdAt]
+      properties:
+        id: { type: integer }
+        titleEn: { type: string }
+        titleAr: { type: string }
+        descriptionEn: { type: string }
+        descriptionAr: { type: string }
+        type: { type: string }
+        severity: { type: string, enum: [low, medium, high, critical] }
+        impactAmount: { type: number }
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiScenarioOption"
+        isActive: { type: boolean }
+        responded: { type: boolean }
+        chosenOptionId: { type: ["string", "null"] }
+        feedbackEn: { type: ["string", "null"] }
+        feedbackAr: { type: ["string", "null"] }
+        xpEarned: { type: integer }
+        createdAt: { type: string }
+
+    GenerateScenarioInput:
+      type: object
+      properties:
+        forceType: { type: string }
+
+    ScenarioResponseInput:
+      type: object
+      required: [optionId]
+      properties:
+        optionId: { type: string }
+
+    ScenarioResponseResult:
+      type: object
+      required: [xpEarned, coinsEarned, feedbackEn, feedbackAr, impactSummaryEn, impactSummaryAr]
+      properties:
+        xpEarned: { type: integer }
+        coinsEarned: { type: integer }
+        feedbackEn: { type: string }
+        feedbackAr: { type: string }
+        impactSummaryEn: { type: string }
+        impactSummaryAr: { type: string }
+        leveledUp: { type: boolean }
+        newLevel: { type: ["integer", "null"] }
+
+    # ── Financial Personality Analysis ───────────────────────────────────────
+
+    PersonalityTrait:
+      type: object
+      required: [nameEn, nameAr, score]
+      properties:
+        nameEn: { type: string }
+        nameAr: { type: string }
+        score: { type: integer }
+        descriptionEn: { type: string }
+        descriptionAr: { type: string }
+
+    PersonalityStrength:
+      type: object
+      required: [en, ar]
+      properties:
+        en: { type: string }
+        ar: { type: string }
+
+    PersonalityAnalysis:
+      type: object
+      required: [id, personalityTypeEn, personalityTypeAr, descriptionEn, descriptionAr, strengths, improvements, traits, overallScore, badgeEn, badgeAr, createdAt]
+      properties:
+        id: { type: integer }
+        personalityTypeEn: { type: string }
+        personalityTypeAr: { type: string }
+        descriptionEn: { type: string }
+        descriptionAr: { type: string }
+        strengths:
+          type: array
+          items:
+            $ref: "#/components/schemas/PersonalityStrength"
+        improvements:
+          type: array
+          items:
+            $ref: "#/components/schemas/PersonalityStrength"
+        traits:
+          type: array
+          items:
+            $ref: "#/components/schemas/PersonalityTrait"
+        overallScore: { type: integer }
+        badgeEn: { type: string }
+        badgeAr: { type: string }
+        createdAt: { type: string }
+
+    # ── Financial Twin ────────────────────────────────────────────────────────
+
+    YearlyProjection:
+      type: object
+      required: [year, savings, netWorth, income, expenses]
+      properties:
+        year: { type: integer }
+        savings: { type: number }
+        netWorth: { type: number }
+        income: { type: number }
+        expenses: { type: number }
+        milestone: { type: ["string", "null"] }
+        milestoneAr: { type: ["string", "null"] }
+
+    FinancialRisk:
+      type: object
+      required: [titleEn, titleAr, descriptionEn, descriptionAr, severity, probability]
+      properties:
+        titleEn: { type: string }
+        titleAr: { type: string }
+        descriptionEn: { type: string }
+        descriptionAr: { type: string }
+        severity: { type: string, enum: [low, medium, high] }
+        probability: { type: integer }
+
+    FinancialGoal:
+      type: object
+      required: [titleEn, titleAr, descriptionEn, descriptionAr, targetYear, targetAmount]
+      properties:
+        titleEn: { type: string }
+        titleAr: { type: string }
+        descriptionEn: { type: string }
+        descriptionAr: { type: string }
+        targetYear: { type: integer }
+        targetAmount: { type: number }
+        isAchievable: { type: boolean }
+
+    TwinScenario:
+      type: object
+      required: [type, labelEn, labelAr, projections]
+      properties:
+        type: { type: string, enum: [optimistic, base, pessimistic] }
+        labelEn: { type: string }
+        labelAr: { type: string }
+        projections:
+          type: array
+          items:
+            $ref: "#/components/schemas/YearlyProjection"
+
+    FinancialTwin:
+      type: object
+      required: [id, summaryEn, summaryAr, currentMonthlyIncome, currentSavingsRate, projection, risks, goals, scenarios, createdAt]
+      properties:
+        id: { type: integer }
+        summaryEn: { type: string }
+        summaryAr: { type: string }
+        currentMonthlyIncome: { type: number }
+        currentSavingsRate: { type: number }
+        projection:
+          type: array
+          items:
+            $ref: "#/components/schemas/YearlyProjection"
+        risks:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancialRisk"
+        goals:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancialGoal"
+        scenarios:
+          type: array
+          items:
+            $ref: "#/components/schemas/TwinScenario"
+        createdAt: { type: string }

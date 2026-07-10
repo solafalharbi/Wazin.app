@@ -17,7 +17,6 @@ export interface EconomicEvent {
   descriptionAr: string;
   type: EconomicEventType;
   severity: EconomicEventSeverity;
-  /** Financial impact amount */
   impact?: number;
   options: EventOption[];
   /** @nullable */

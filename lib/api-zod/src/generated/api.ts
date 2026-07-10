@@ -35,7 +35,7 @@ export const GetUserProfileResponse = zod.object({
 
 
 /**
- * @summary Update user profile (language, theme, etc.)
+ * @summary Update user profile
  */
 export const UpdateUserProfileBody = zod.object({
   "language": zod.enum(['ar', 'en']).optional(),
@@ -59,7 +59,7 @@ export const UpdateUserProfileResponse = zod.object({
 
 
 /**
- * @summary Get dashboard summary - XP, budget health, stats
+ * @summary Get dashboard summary
  */
 export const GetDashboardSummaryResponse = zod.object({
   "user": zod.object({
@@ -75,7 +75,7 @@ export const GetDashboardSummaryResponse = zod.object({
   "badge": zod.string().nullish(),
   "joinedAt": zod.string()
 }),
-  "budgetHealth": zod.number().describe('Budget health score 0-100'),
+  "budgetHealth": zod.number(),
   "xpToNextLevel": zod.number(),
   "activeChallenges": zod.number(),
   "totalRewards": zod.number(),
@@ -84,16 +84,16 @@ export const GetDashboardSummaryResponse = zod.object({
   "savingsRate": zod.number().optional(),
   "spendingBreakdown": zod.array(zod.object({
   "category": zod.string(),
-  "categoryAr": zod.string().optional(),
+  "categoryAr": zod.string(),
   "amount": zod.number(),
   "percentage": zod.number(),
-  "color": zod.string().optional()
+  "color": zod.string()
 })).optional()
 })
 
 
 /**
- * @summary Recent user activity feed
+ * @summary Recent activity feed
  */
 export const GetActivityFeedResponseItem = zod.object({
   "id": zod.number(),
@@ -110,7 +110,7 @@ export const GetActivityFeedResponse = zod.array(GetActivityFeedResponseItem)
 
 
 /**
- * @summary Budget performance over time (chart data)
+ * @summary Budget performance chart data
  */
 export const GetBudgetStatsResponse = zod.object({
   "monthly": zod.array(zod.object({
@@ -121,16 +121,16 @@ export const GetBudgetStatsResponse = zod.object({
 })),
   "categories": zod.array(zod.object({
   "category": zod.string(),
-  "categoryAr": zod.string().optional(),
+  "categoryAr": zod.string(),
   "amount": zod.number(),
   "percentage": zod.number(),
-  "color": zod.string().optional()
+  "color": zod.string()
 }))
 })
 
 
 /**
- * @summary Get current game simulation state
+ * @summary Get current simulation state
  */
 export const GetSimulationStateResponse = zod.object({
   "id": zod.number(),
@@ -211,7 +211,7 @@ export const AllocateBudgetResponse = zod.object({
 
 
 /**
- * @summary Get active economic events/challenges
+ * @summary Get active economic events
  */
 export const GetEconomicEventsResponseItem = zod.object({
   "id": zod.number(),
@@ -221,7 +221,7 @@ export const GetEconomicEventsResponseItem = zod.object({
   "descriptionAr": zod.string(),
   "type": zod.enum(['market_crash', 'bonus', 'expense', 'investment', 'emergency', 'opportunity']),
   "severity": zod.enum(['low', 'medium', 'high', 'critical']),
-  "impact": zod.number().optional().describe('Financial impact amount'),
+  "impact": zod.number().optional(),
   "options": zod.array(zod.object({
   "id": zod.string(),
   "labelEn": zod.string(),
@@ -260,7 +260,7 @@ export const MakeDecisionResponse = zod.object({
 
 
 /**
- * @summary Get past decisions and their outcomes
+ * @summary Get past decisions
  */
 export const GetDecisionHistoryResponseItem = zod.object({
   "id": zod.number(),
@@ -306,7 +306,7 @@ export const SendChatMessageResponse = zod.object({
 
 
 /**
- * @summary Get personalized AI financial insight for dashboard
+ * @summary Get personalized AI financial insight
  */
 export const GetAIInsightResponse = zod.object({
   "summaryEn": zod.string(),
@@ -324,7 +324,7 @@ export const GetAIInsightResponse = zod.object({
 
 
 /**
- * @summary Get available rewards catalog (Alinma Bank offers)
+ * @summary Get rewards catalog
  */
 export const GetRewardsResponseItem = zod.object({
   "id": zod.number(),
@@ -343,7 +343,7 @@ export const GetRewardsResponse = zod.array(GetRewardsResponseItem)
 
 
 /**
- * @summary Get user's earned and redeemed rewards
+ * @summary Get user's earned rewards
  */
 export const GetUserRewardsResponseItem = zod.object({
   "id": zod.number(),
@@ -368,7 +368,7 @@ export const GetUserRewardsResponse = zod.array(GetUserRewardsResponseItem)
 
 
 /**
- * @summary Redeem a virtual reward for a real offer
+ * @summary Redeem a reward
  */
 export const RedeemRewardParams = zod.object({
   "rewardId": zod.coerce.number()
@@ -383,7 +383,7 @@ export const RedeemRewardResponse = zod.object({
 
 
 /**
- * @summary Get global leaderboard rankings
+ * @summary Get leaderboard rankings
  */
 export const GetLeaderboardResponse = zod.object({
   "entries": zod.array(zod.object({
@@ -399,6 +399,264 @@ export const GetLeaderboardResponse = zod.object({
 })),
   "userRank": zod.number(),
   "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Get active AI-generated scenarios for this user
+ */
+export const GetActiveScenariosResponseItem = zod.object({
+  "id": zod.number(),
+  "titleEn": zod.string(),
+  "titleAr": zod.string(),
+  "descriptionEn": zod.string(),
+  "descriptionAr": zod.string(),
+  "type": zod.string(),
+  "severity": zod.enum(['low', 'medium', 'high', 'critical']),
+  "impactAmount": zod.number(),
+  "options": zod.array(zod.object({
+  "id": zod.string(),
+  "labelEn": zod.string(),
+  "labelAr": zod.string(),
+  "riskLevel": zod.enum(['safe', 'moderate', 'risky']),
+  "xpReward": zod.number(),
+  "outcomePreviewEn": zod.string().optional(),
+  "outcomePreviewAr": zod.string().optional()
+})),
+  "isActive": zod.boolean(),
+  "responded": zod.boolean(),
+  "chosenOptionId": zod.string().nullish(),
+  "feedbackEn": zod.string().nullish(),
+  "feedbackAr": zod.string().nullish(),
+  "xpEarned": zod.number().optional(),
+  "createdAt": zod.string()
+})
+export const GetActiveScenariosResponse = zod.array(GetActiveScenariosResponseItem)
+
+
+/**
+ * @summary AI generates a new personalized financial scenario
+ */
+export const GenerateScenarioBody = zod.object({
+  "forceType": zod.string().optional()
+})
+
+export const GenerateScenarioResponse = zod.object({
+  "id": zod.number(),
+  "titleEn": zod.string(),
+  "titleAr": zod.string(),
+  "descriptionEn": zod.string(),
+  "descriptionAr": zod.string(),
+  "type": zod.string(),
+  "severity": zod.enum(['low', 'medium', 'high', 'critical']),
+  "impactAmount": zod.number(),
+  "options": zod.array(zod.object({
+  "id": zod.string(),
+  "labelEn": zod.string(),
+  "labelAr": zod.string(),
+  "riskLevel": zod.enum(['safe', 'moderate', 'risky']),
+  "xpReward": zod.number(),
+  "outcomePreviewEn": zod.string().optional(),
+  "outcomePreviewAr": zod.string().optional()
+})),
+  "isActive": zod.boolean(),
+  "responded": zod.boolean(),
+  "chosenOptionId": zod.string().nullish(),
+  "feedbackEn": zod.string().nullish(),
+  "feedbackAr": zod.string().nullish(),
+  "xpEarned": zod.number().optional(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Respond to an AI-generated scenario
+ */
+export const RespondToScenarioParams = zod.object({
+  "scenarioId": zod.coerce.number()
+})
+
+export const RespondToScenarioBody = zod.object({
+  "optionId": zod.string()
+})
+
+export const RespondToScenarioResponse = zod.object({
+  "xpEarned": zod.number(),
+  "coinsEarned": zod.number(),
+  "feedbackEn": zod.string(),
+  "feedbackAr": zod.string(),
+  "impactSummaryEn": zod.string(),
+  "impactSummaryAr": zod.string(),
+  "leveledUp": zod.boolean().optional(),
+  "newLevel": zod.number().nullish()
+})
+
+
+/**
+ * @summary Get the latest personality analysis report
+ */
+export const GetPersonalityAnalysisResponse = zod.object({
+  "id": zod.number(),
+  "personalityTypeEn": zod.string(),
+  "personalityTypeAr": zod.string(),
+  "descriptionEn": zod.string(),
+  "descriptionAr": zod.string(),
+  "strengths": zod.array(zod.object({
+  "en": zod.string(),
+  "ar": zod.string()
+})),
+  "improvements": zod.array(zod.object({
+  "en": zod.string(),
+  "ar": zod.string()
+})),
+  "traits": zod.array(zod.object({
+  "nameEn": zod.string(),
+  "nameAr": zod.string(),
+  "score": zod.number(),
+  "descriptionEn": zod.string().optional(),
+  "descriptionAr": zod.string().optional()
+})),
+  "overallScore": zod.number(),
+  "badgeEn": zod.string(),
+  "badgeAr": zod.string(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary AI generates a fresh personality analysis from decision history
+ */
+export const GeneratePersonalityAnalysisResponse = zod.object({
+  "id": zod.number(),
+  "personalityTypeEn": zod.string(),
+  "personalityTypeAr": zod.string(),
+  "descriptionEn": zod.string(),
+  "descriptionAr": zod.string(),
+  "strengths": zod.array(zod.object({
+  "en": zod.string(),
+  "ar": zod.string()
+})),
+  "improvements": zod.array(zod.object({
+  "en": zod.string(),
+  "ar": zod.string()
+})),
+  "traits": zod.array(zod.object({
+  "nameEn": zod.string(),
+  "nameAr": zod.string(),
+  "score": zod.number(),
+  "descriptionEn": zod.string().optional(),
+  "descriptionAr": zod.string().optional()
+})),
+  "overallScore": zod.number(),
+  "badgeEn": zod.string(),
+  "badgeAr": zod.string(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Get Financial Twin 5–10 year projection
+ */
+export const GetTwinProjectionResponse = zod.object({
+  "id": zod.number(),
+  "summaryEn": zod.string(),
+  "summaryAr": zod.string(),
+  "currentMonthlyIncome": zod.number(),
+  "currentSavingsRate": zod.number(),
+  "projection": zod.array(zod.object({
+  "year": zod.number(),
+  "savings": zod.number(),
+  "netWorth": zod.number(),
+  "income": zod.number(),
+  "expenses": zod.number(),
+  "milestone": zod.string().nullish(),
+  "milestoneAr": zod.string().nullish()
+})),
+  "risks": zod.array(zod.object({
+  "titleEn": zod.string(),
+  "titleAr": zod.string(),
+  "descriptionEn": zod.string(),
+  "descriptionAr": zod.string(),
+  "severity": zod.enum(['low', 'medium', 'high']),
+  "probability": zod.number()
+})),
+  "goals": zod.array(zod.object({
+  "titleEn": zod.string(),
+  "titleAr": zod.string(),
+  "descriptionEn": zod.string(),
+  "descriptionAr": zod.string(),
+  "targetYear": zod.number(),
+  "targetAmount": zod.number(),
+  "isAchievable": zod.boolean().optional()
+})),
+  "scenarios": zod.array(zod.object({
+  "type": zod.enum(['optimistic', 'base', 'pessimistic']),
+  "labelEn": zod.string(),
+  "labelAr": zod.string(),
+  "projections": zod.array(zod.object({
+  "year": zod.number(),
+  "savings": zod.number(),
+  "netWorth": zod.number(),
+  "income": zod.number(),
+  "expenses": zod.number(),
+  "milestone": zod.string().nullish(),
+  "milestoneAr": zod.string().nullish()
+}))
+})),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary AI generates/refreshes the Financial Twin projection
+ */
+export const GenerateTwinProjectionResponse = zod.object({
+  "id": zod.number(),
+  "summaryEn": zod.string(),
+  "summaryAr": zod.string(),
+  "currentMonthlyIncome": zod.number(),
+  "currentSavingsRate": zod.number(),
+  "projection": zod.array(zod.object({
+  "year": zod.number(),
+  "savings": zod.number(),
+  "netWorth": zod.number(),
+  "income": zod.number(),
+  "expenses": zod.number(),
+  "milestone": zod.string().nullish(),
+  "milestoneAr": zod.string().nullish()
+})),
+  "risks": zod.array(zod.object({
+  "titleEn": zod.string(),
+  "titleAr": zod.string(),
+  "descriptionEn": zod.string(),
+  "descriptionAr": zod.string(),
+  "severity": zod.enum(['low', 'medium', 'high']),
+  "probability": zod.number()
+})),
+  "goals": zod.array(zod.object({
+  "titleEn": zod.string(),
+  "titleAr": zod.string(),
+  "descriptionEn": zod.string(),
+  "descriptionAr": zod.string(),
+  "targetYear": zod.number(),
+  "targetAmount": zod.number(),
+  "isAchievable": zod.boolean().optional()
+})),
+  "scenarios": zod.array(zod.object({
+  "type": zod.enum(['optimistic', 'base', 'pessimistic']),
+  "labelEn": zod.string(),
+  "labelAr": zod.string(),
+  "projections": zod.array(zod.object({
+  "year": zod.number(),
+  "savings": zod.number(),
+  "netWorth": zod.number(),
+  "income": zod.number(),
+  "expenses": zod.number(),
+  "milestone": zod.string().nullish(),
+  "milestoneAr": zod.string().nullish()
+}))
+})),
+  "createdAt": zod.string()
 })
 
 

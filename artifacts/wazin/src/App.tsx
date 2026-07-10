@@ -14,6 +14,9 @@ import AIAdvisor from '@/pages/AIAdvisor';
 import Rewards from '@/pages/Rewards';
 import Leaderboard from '@/pages/Leaderboard';
 import Profile from '@/pages/Profile';
+import Scenarios from '@/pages/Scenarios';
+import PersonalityAnalysis from '@/pages/PersonalityAnalysis';
+import FinancialTwin from '@/pages/FinancialTwin';
 
 const queryClient = new QueryClient();
 
@@ -28,6 +31,9 @@ function Router() {
         <Route path="/rewards" component={Rewards} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/profile" component={Profile} />
+        <Route path="/scenarios" component={Scenarios} />
+        <Route path="/personality" component={PersonalityAnalysis} />
+        <Route path="/financial-twin" component={FinancialTwin} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

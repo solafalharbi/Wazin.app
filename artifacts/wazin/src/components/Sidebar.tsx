@@ -14,7 +14,10 @@ import {
   Menu,
   Sun,
   Moon,
-  Scale
+  Scale,
+  Sparkles,
+  BrainCircuit,
+  TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -34,6 +37,9 @@ export function Sidebar({ className }: { className?: string }) {
     { href: '/rewards', icon: Gift, labelAr: 'المكافآت', labelEn: 'Rewards' },
     { href: '/leaderboard', icon: Trophy, labelAr: 'لوحة الصدارة', labelEn: 'Leaderboard' },
     { href: '/profile', icon: User, labelAr: 'الملف الشخصي', labelEn: 'Profile' },
+    { href: '/scenarios', icon: Sparkles, labelAr: 'سيناريوهات الذكاء', labelEn: 'AI Scenarios' },
+    { href: '/personality', icon: BrainCircuit, labelAr: 'شخصيتي المالية', labelEn: 'My Personality' },
+    { href: '/financial-twin', icon: TrendingUp, labelAr: 'توأمي المالي', labelEn: 'Financial Twin' },
   ];
 
   const toggleLanguage = () => {
