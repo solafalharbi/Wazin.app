@@ -73,7 +73,7 @@ export default function Dashboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-1">
             {language === 'ar'
-              ? `أهلاً بعودتك، ${s.user?.username ?? ''}!`
+              ? `أهلاً بعودتك يا ${s.user?.username ?? ''}!`
               : `Welcome back, ${s.user?.username ?? ''}!`}
           </h1>
           <p className="text-muted-foreground">
