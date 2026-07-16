@@ -59,11 +59,11 @@ export default function Profile() {
   };
 
   const p = profile || {
-    username: 'Solaf',
-    email: 'solaf@example.com',
-    xp: 3200,
-    level: 8,
-    coins: 1200,
+    username: '',
+    email: '',
+    xp: 0,
+    level: 1,
+    coins: 0,
     joinedAt: new Date().toISOString()
   };
 
@@ -76,13 +76,12 @@ export default function Profile() {
         <div className="absolute top-0 left-0 w-full h-24 bg-primary/20" />
         <CardContent className="pt-12 px-6 pb-6 relative z-10 flex flex-col sm:flex-row items-center sm:items-end gap-6">
           <Avatar className="w-24 h-24 border-4 border-background shadow-lg">
-            <AvatarImage src="/avatar-solaf.png" />
             <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
-              {username.substring(0, 2).toUpperCase() || 'SO'}
+              {username.substring(0, 2).toUpperCase() || '?'}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-2xl font-bold">{username || 'Solaf'}</h2>
+            <h2 className="text-2xl font-bold">{username}</h2>
             <p className="text-muted-foreground">{p.email}</p>
           </div>
           <div className="flex gap-4 w-full sm:w-auto mt-4 sm:mt-0">

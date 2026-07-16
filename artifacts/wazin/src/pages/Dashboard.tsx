@@ -45,7 +45,7 @@ export default function Dashboard() {
 
   // Fallback data if API returns empty
   const s = summary || {
-    user: { xp: 450, level: 4, coins: 1200 },
+    user: { username: '', xp: 450, level: 4, coins: 1200 },
     budgetHealth: 85,
     xpToNextLevel: 550,
     activeChallenges: 2,
@@ -72,7 +72,9 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-1">
-            {t('أهلاً بعودتك، صلف!', 'Welcome back, Solaf!')}
+            {language === 'ar'
+              ? `أهلاً بعودتك، ${s.user?.username ?? ''}!`
+              : `Welcome back, ${s.user?.username ?? ''}!`}
           </h1>
           <p className="text-muted-foreground">
             {t('ها هي نظرة سريعة على تقدمك المالي هذا الأسبوع.', 'Here is a quick look at your financial progress this week.')}
