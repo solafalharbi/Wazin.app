@@ -9,14 +9,13 @@ import {
 
 const router: IRouter = Router();
 
-// Default user ID — single-user app (Solaf)
-const DEFAULT_USER_ID = 1;
-
 router.get("/user/profile", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.id, DEFAULT_USER_ID));
+    .where(eq(usersTable.id, userId));
 
   if (!user) {
     res.status(404).json({ error: "User not found" });
@@ -32,6 +31,8 @@ router.get("/user/profile", async (req, res): Promise<void> => {
 });
 
 router.patch("/user/profile", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const parsed = UpdateUserProfileBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -41,7 +42,7 @@ router.patch("/user/profile", async (req, res): Promise<void> => {
   const [user] = await db
     .update(usersTable)
     .set(parsed.data)
-    .where(eq(usersTable.id, DEFAULT_USER_ID))
+    .where(eq(usersTable.id, userId))
     .returning();
 
   if (!user) {

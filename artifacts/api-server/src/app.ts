@@ -6,8 +6,12 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { llmGenerateLimiter, llmChatLimiter } from "./lib/rateLimiter";
 import { requireApiToken } from "./lib/auth";
+import { sessionMiddleware, requireSession } from "./lib/session";
 
 const app: Express = express();
+
+// Trust the Replit reverse-proxy so cookies are treated as secure over HTTPS.
+app.set("trust proxy", 1);
 
 app.use(helmet());
 
@@ -30,6 +34,7 @@ app.use(
     },
   }),
 );
+
 // Build an explicit allowlist from the Replit-injected REPLIT_DOMAINS variable
 // (comma-separated; covers both the dev proxy domain and any deployed domain).
 // Localhost variants are included so curl / local tooling still works in dev.
@@ -59,11 +64,18 @@ app.use(
     credentials: true,
   }),
 );
+
+// Session middleware — must be before routes so req.session is populated.
+app.use(sessionMiddleware);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Require a valid API token on all /api routes (healthz is exempted inside the middleware).
 app.use("/api", requireApiToken);
+
+// Require a valid session on all /api routes except public auth endpoints.
+app.use("/api", requireSession);
 
 // Rate-limit all LLM-backed endpoints before the main router.
 // Generation endpoints (expensive — up to 8 192 tokens each): 5 req / 15 min per IP.

@@ -4,7 +4,6 @@ import { db, usersTable } from "@workspace/db";
 import { GetLeaderboardResponse } from "@workspace/api-zod";
 
 const router: IRouter = Router();
-const DEFAULT_USER_ID = 1;
 
 const LEADERBOARD_SEED = [
   { rank: 1, userId: 101, username: "juju", xp: 4820, level: 10, badge: "Elite Saver", weeklyXpGain: 380 },
@@ -16,28 +15,36 @@ const LEADERBOARD_SEED = [
 ];
 
 router.get("/leaderboard", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   let currentUser = null;
   try {
-    const rows = await db.select().from(usersTable).where(eq(usersTable.id, DEFAULT_USER_ID)).limit(1);
+    const rows = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
     currentUser = rows[0] ?? null;
   } catch {
     // ignore
   }
 
-  const solafEntry = {
-    rank: 4,
-    userId: DEFAULT_USER_ID,
-    username: "Solaf",
-    xp: currentUser?.xp ?? 3120,
-    level: currentUser?.level ?? 7,
+  // Determine the current user's rank based on their XP vs seeded players
+  const userXp = currentUser?.xp ?? 0;
+  const higherRanked = LEADERBOARD_SEED.filter((s) => s.xp > userXp);
+  const userRank = higherRanked.length + 1;
+
+  const userEntry = {
+    rank: userRank,
+    userId,
+    username: currentUser?.username ?? "You",
+    xp: userXp,
+    level: currentUser?.level ?? 1,
     avatarUrl: currentUser?.avatarUrl ?? null,
-    badge: "Financial Warrior",
+    badge: currentUser?.badge ?? "Newcomer",
     isCurrentUser: true,
-    weeklyXpGain: 240,
+    weeklyXpGain: 0,
   };
 
+  // Adjust seed ranks to account for the current user's position
   const seedEntries = LEADERBOARD_SEED.map((s) => ({
-    rank: s.rank,
+    rank: s.xp > userXp ? s.rank : s.rank + 1,
     userId: s.userId,
     username: s.username,
     xp: s.xp,
@@ -48,13 +55,12 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
     weeklyXpGain: s.weeklyXpGain,
   }));
 
-  const all = [...seedEntries.slice(0, 3), solafEntry, ...seedEntries.slice(3)];
-  const sorted = all.sort((a, b) => a.rank - b.rank);
+  const all = [...seedEntries, userEntry].sort((a, b) => a.rank - b.rank);
 
   res.json(
     GetLeaderboardResponse.parse({
-      entries: sorted,
-      userRank: 4,
+      entries: all,
+      userRank,
       updatedAt: new Date().toISOString(),
     })
   );

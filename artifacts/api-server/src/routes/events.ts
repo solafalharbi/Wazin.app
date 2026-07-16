@@ -17,7 +17,6 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
-const DEFAULT_USER_ID = 1;
 
 router.get("/events", async (req, res): Promise<void> => {
   const events = await db
@@ -60,6 +59,8 @@ router.get("/events", async (req, res): Promise<void> => {
 });
 
 router.post("/events/:eventId/decide", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const rawId = Array.isArray(req.params.eventId) ? req.params.eventId[0] : req.params.eventId;
   const params = MakeDecisionParams.safeParse({ eventId: rawId });
   if (!params.success) {
@@ -102,9 +103,8 @@ router.post("/events/:eventId/decide", async (req, res): Promise<void> => {
   const coinsEarned = option.coinsReward;
   const budgetImpact = option.budgetEffect ? parseFloat(option.budgetEffect) : 0;
 
-  // Record the decision
   await db.insert(userDecisionsTable).values({
-    userId: DEFAULT_USER_ID,
+    userId,
     eventId: params.data.eventId,
     optionKey: body.data.optionId,
     xpEarned,
@@ -114,11 +114,10 @@ router.post("/events/:eventId/decide", async (req, res): Promise<void> => {
     feedbackAr: option.expectedOutcomeAr,
   });
 
-  // Update user XP and coins
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.id, DEFAULT_USER_ID));
+    .where(eq(usersTable.id, userId));
 
   const newXp = (user?.xp ?? 0) + xpEarned;
   const newCoins = (user?.coins ?? 0) + coinsEarned;
@@ -129,45 +128,38 @@ router.post("/events/:eventId/decide", async (req, res): Promise<void> => {
   await db
     .update(usersTable)
     .set({ xp: newXp, coins: newCoins, level: newLevel })
-    .where(eq(usersTable.id, DEFAULT_USER_ID));
+    .where(eq(usersTable.id, userId));
 
-  // Add activity
   await db.insert(activitiesTable).values({
-    userId: DEFAULT_USER_ID,
+    userId,
     type: "decision",
     titleEn: `Decision Made: ${event.titleEn}`,
-    titleAr: `قرار اتخذ: ${event.titleAr}`,
-    descriptionEn: option.expectedOutcomeEn || `You chose: ${option.labelEn}`,
-    descriptionAr: option.expectedOutcomeAr || `اخترت: ${option.labelAr}`,
+    titleAr: `قرار اتُّخذ: ${event.titleAr}`,
+    descriptionEn: option.expectedOutcomeEn,
+    descriptionAr: option.expectedOutcomeAr,
     xpChange: xpEarned,
     coinsChange: coinsEarned,
   });
 
-  // Mark event inactive
-  await db
-    .update(economicEventsTable)
-    .set({ isActive: false })
-    .where(eq(economicEventsTable.id, params.data.eventId));
-
-  const response = {
+  res.json(MakeDecisionResponse.parse({
     xpEarned,
     coinsEarned,
     budgetImpact,
-    feedbackEn: option.expectedOutcomeEn || `Great choice! You selected: ${option.labelEn}`,
-    feedbackAr: option.expectedOutcomeAr || `خيار رائع! اخترت: ${option.labelAr}`,
+    feedbackEn: option.expectedOutcomeEn,
+    feedbackAr: option.expectedOutcomeAr,
     newHealthScore: 78,
     leveledUp,
     newLevel: leveledUp ? newLevel : null,
-  };
-
-  res.json(MakeDecisionResponse.parse(response));
+  }));
 });
 
 router.get("/events/history", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const decisions = await db
     .select()
     .from(userDecisionsTable)
-    .where(eq(userDecisionsTable.userId, DEFAULT_USER_ID))
+    .where(eq(userDecisionsTable.userId, userId))
     .orderBy(desc(userDecisionsTable.createdAt))
     .limit(20);
 

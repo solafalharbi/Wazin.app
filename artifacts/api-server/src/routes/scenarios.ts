@@ -20,7 +20,6 @@ import { openai, AI_MODEL, extractJson } from "../lib/openai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
-const DEFAULT_USER_ID = 1;
 
 function parseScenario(row: typeof aiScenariosTable.$inferSelect) {
   const options = JSON.parse(row.optionsJson) as Array<{
@@ -53,10 +52,12 @@ function parseScenario(row: typeof aiScenariosTable.$inferSelect) {
 }
 
 router.get("/scenarios/active", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const scenarios = await db
     .select()
     .from(aiScenariosTable)
-    .where(and(eq(aiScenariosTable.userId, DEFAULT_USER_ID), eq(aiScenariosTable.isActive, true)))
+    .where(and(eq(aiScenariosTable.userId, userId), eq(aiScenariosTable.isActive, true)))
     .orderBy(desc(aiScenariosTable.createdAt))
     .limit(10);
 
@@ -64,25 +65,26 @@ router.get("/scenarios/active", async (req, res): Promise<void> => {
 });
 
 router.post("/scenarios/generate", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const parsed = GenerateScenarioBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
 
-  // Gather user context
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, DEFAULT_USER_ID));
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
   const [sim] = await db
     .select()
     .from(simulationsTable)
-    .where(eq(simulationsTable.userId, DEFAULT_USER_ID))
+    .where(eq(simulationsTable.userId, userId))
     .orderBy(desc(simulationsTable.createdAt))
     .limit(1);
 
   const recentDecisions = await db
     .select()
     .from(userDecisionsTable)
-    .where(eq(userDecisionsTable.userId, DEFAULT_USER_ID))
+    .where(eq(userDecisionsTable.userId, userId))
     .orderBy(desc(userDecisionsTable.createdAt))
     .limit(5);
 
@@ -95,7 +97,7 @@ router.post("/scenarios/generate", async (req, res): Promise<void> => {
     : SCENARIO_TYPES[Math.floor(Math.random() * SCENARIO_TYPES.length)];
 
   const userContext = `
-User: ${user?.username ?? "Solaf"}, Level ${user?.level ?? 7}, XP ${user?.xp ?? 3120}, Coins ${user?.coins ?? 850}
+User: ${user?.username ?? "User"}, Level ${user?.level ?? 1}, XP ${user?.xp ?? 0}, Coins ${user?.coins ?? 0}
 Monthly Budget: SAR ${sim ? parseFloat(sim.totalBudget) : 7200}
 Budget Health Score: ${sim?.healthScore ?? 75}/100
 Recent decisions risk profile: ${recentDecisions.length > 0 ? "mixed" : "no history yet"}
@@ -108,7 +110,7 @@ Recent decisions risk profile: ${recentDecisions.length > 0 ? "mixed" : "no hist
       messages: [
         {
           role: "system",
-          content: `You are a financial scenario generator for Wazin (وازِن), a Saudi financial education app targeting young people. 
+          content: `You are a financial scenario generator for Wazin (وازِن), a Saudi financial education app targeting young people.
 Generate a realistic, engaging financial scenario in BOTH English and Arabic.
 The scenario must be culturally relevant to Saudi Arabia and feel authentic.
 Output ONLY valid JSON matching the exact structure specified.`,
@@ -116,44 +118,45 @@ Output ONLY valid JSON matching the exact structure specified.`,
         {
           role: "user",
           content: `Generate a unique "${scenarioType}" financial scenario for this user:
+
 ${userContext}
 
-Output JSON with this exact structure (no markdown, no extra text):
+Output this exact JSON:
 {
-  "titleEn": "short punchy title in English",
-  "titleAr": "نفس العنوان بالعربية",
-  "descriptionEn": "2-3 sentences describing the scenario in vivid detail, make it feel real and urgent",
-  "descriptionAr": "2-3 جمل تصف السيناريو بتفاصيل حية، اجعله يبدو حقيقياً وعاجلاً",
+  "titleEn": "Short scenario title",
+  "titleAr": "عنوان السيناريو",
+  "descriptionEn": "2-3 sentence scenario description",
+  "descriptionAr": "وصف السيناريو بجملتين أو ثلاث",
   "type": "${scenarioType}",
-  "severity": "low|medium|high|critical",
-  "impactAmount": <number in SAR, can be negative for expenses>,
+  "severity": "low|medium|high",
+  "impactAmount": <SAR amount 500-5000>,
   "options": [
     {
-      "id": "a",
-      "labelEn": "first option label",
-      "labelAr": "نص الخيار الأول",
-      "riskLevel": "safe|moderate|risky",
-      "xpReward": <10-80>,
-      "outcomePreviewEn": "what happens if you choose this",
-      "outcomePreviewAr": "ماذا يحدث إذا اخترت هذا"
+      "id": "conservative",
+      "labelEn": "Safe choice label",
+      "labelAr": "تسمية الخيار الآمن",
+      "riskLevel": "low",
+      "xpReward": 50,
+      "outcomePreviewEn": "What happens if they choose this",
+      "outcomePreviewAr": "ما يحدث إذا اختاروا هذا"
     },
     {
-      "id": "b",
-      "labelEn": "second option label",
-      "labelAr": "نص الخيار الثاني",
-      "riskLevel": "safe|moderate|risky",
-      "xpReward": <10-80>,
-      "outcomePreviewEn": "what happens if you choose this",
-      "outcomePreviewAr": "ماذا يحدث إذا اخترت هذا"
+      "id": "balanced",
+      "labelEn": "Balanced choice label",
+      "labelAr": "تسمية الخيار المتوازن",
+      "riskLevel": "medium",
+      "xpReward": 100,
+      "outcomePreviewEn": "What happens if they choose this",
+      "outcomePreviewAr": "ما يحدث إذا اختاروا هذا"
     },
     {
-      "id": "c",
-      "labelEn": "third option label",
-      "labelAr": "نص الخيار الثالث",
-      "riskLevel": "safe|moderate|risky",
-      "xpReward": <10-80>,
-      "outcomePreviewEn": "what happens if you choose this",
-      "outcomePreviewAr": "ماذا يحدث إذا اخترت هذا"
+      "id": "aggressive",
+      "labelEn": "Bold choice label",
+      "labelAr": "تسمية الخيار الجريء",
+      "riskLevel": "high",
+      "xpReward": 150,
+      "outcomePreviewEn": "What happens if they choose this",
+      "outcomePreviewAr": "ما يحدث إذا اختاروا هذا"
     }
   ]
 }`,
@@ -164,31 +167,34 @@ Output JSON with this exact structure (no markdown, no extra text):
     const raw = completion.choices[0]?.message?.content ?? "{}";
     const data = extractJson<Record<string, any>>(raw);
 
-    const [row] = await db
+    const [scenario] = await db
       .insert(aiScenariosTable)
       .values({
-        userId: DEFAULT_USER_ID,
+        userId,
         titleEn: data.titleEn,
         titleAr: data.titleAr,
         descriptionEn: data.descriptionEn,
         descriptionAr: data.descriptionAr,
         type: data.type ?? scenarioType,
         severity: data.severity ?? "medium",
-        impactAmount: String(data.impactAmount ?? 0),
+        impactAmount: String(data.impactAmount ?? 1000),
         optionsJson: JSON.stringify(data.options ?? []),
         isActive: true,
         responded: false,
+        xpEarned: 0,
       })
       .returning();
 
-    res.json(GenerateScenarioResponse.parse(parseScenario(row)));
+    res.json(GenerateScenarioResponse.parse(parseScenario(scenario)));
   } catch (err) {
-    logger.error({ err }, "OpenAI scenario generation failed");
+    logger.error({ err }, "Scenario generation failed");
     res.status(500).json({ error: "Failed to generate scenario" });
   }
 });
 
 router.post("/scenarios/:scenarioId/respond", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const rawId = Array.isArray(req.params.scenarioId) ? req.params.scenarioId[0] : req.params.scenarioId;
   const params = RespondToScenarioParams.safeParse({ scenarioId: rawId });
   if (!params.success) {
@@ -205,10 +211,15 @@ router.post("/scenarios/:scenarioId/respond", async (req, res): Promise<void> =>
   const [scenario] = await db
     .select()
     .from(aiScenariosTable)
-    .where(and(eq(aiScenariosTable.id, params.data.scenarioId), eq(aiScenariosTable.userId, DEFAULT_USER_ID)));
+    .where(and(eq(aiScenariosTable.id, params.data.scenarioId), eq(aiScenariosTable.userId, userId)));
 
   if (!scenario) {
     res.status(404).json({ error: "Scenario not found" });
+    return;
+  }
+
+  if (scenario.responded) {
+    res.status(409).json({ error: "Already responded to this scenario" });
     return;
   }
 
@@ -228,89 +239,71 @@ router.post("/scenarios/:scenarioId/respond", async (req, res): Promise<void> =>
     return;
   }
 
-  // AI generates personalised feedback
-  let feedbackEn = chosen.outcomePreviewEn;
-  let feedbackAr = chosen.outcomePreviewAr;
-  let impactSummaryEn = `Your decision impacts your budget by SAR ${Math.abs(parseFloat(scenario.impactAmount))}.`;
-  let impactSummaryAr = `يؤثر قرارك على ميزانيتك بمقدار ${Math.abs(parseFloat(scenario.impactAmount))} ريال.`;
-
   try {
-    const fbCompletion = await openai.chat.completions.create({
+    const completion = await openai.chat.completions.create({
       model: AI_MODEL,
-      max_tokens: 400,
+      max_tokens: 600,
       messages: [
         {
           role: "system",
-          content: "You are a wise, encouraging Saudi financial coach. Be concise (2 sentences max per language). Output only JSON.",
+          content: "You are a financial outcomes narrator. Output ONLY valid JSON.",
         },
         {
           role: "user",
-          content: `Scenario: "${scenario.titleEn}"
-User chose: "${chosen.labelEn}" (risk: ${chosen.riskLevel})
-Impact: SAR ${scenario.impactAmount}
+          content: `The user chose "${chosen.labelEn}" (${chosen.riskLevel} risk) for scenario: "${scenario.titleEn}".
+Generate personalised feedback in both English and Arabic.
 
-Give personalised feedback in English and Arabic. JSON: {"feedbackEn":"...","feedbackAr":"...","impactSummaryEn":"...","impactSummaryAr":"..."}`,
+Output JSON:
+{
+  "feedbackEn": "2-3 sentences explaining the outcome and financial lesson",
+  "feedbackAr": "جملتان أو ثلاث تشرح النتيجة والدرس المالي",
+  "impactSummaryEn": "One sentence on budget impact",
+  "impactSummaryAr": "جملة واحدة عن تأثير الميزانية"
+}`,
         },
       ],
     });
 
-    const fbRaw = fbCompletion.choices[0]?.message?.content ?? "{}";
-    const fb = extractJson<Record<string, any>>(fbRaw);
-    feedbackEn = fb.feedbackEn ?? feedbackEn;
-    feedbackAr = fb.feedbackAr ?? feedbackAr;
-    impactSummaryEn = fb.impactSummaryEn ?? impactSummaryEn;
-    impactSummaryAr = fb.impactSummaryAr ?? impactSummaryAr;
+    const raw = completion.choices[0]?.message?.content ?? "{}";
+    const fb = extractJson<Record<string, string>>(raw);
+
+    const feedbackEn = fb.feedbackEn ?? chosen.outcomePreviewEn;
+    const feedbackAr = fb.feedbackAr ?? chosen.outcomePreviewAr;
+    const impactSummaryEn = fb.impactSummaryEn ?? "Your budget has been updated.";
+    const impactSummaryAr = fb.impactSummaryAr ?? "تم تحديث ميزانيتك.";
+
+    const xpEarned = chosen.xpReward;
+    const coinsEarned = Math.floor(xpEarned / 3);
+
+    await db
+      .update(aiScenariosTable)
+      .set({ responded: true, isActive: false, chosenOptionId: body.data.optionId, feedbackEn, feedbackAr, xpEarned })
+      .where(eq(aiScenariosTable.id, scenario.id));
+
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
+    const newXp = (user?.xp ?? 0) + xpEarned;
+    const newCoins = (user?.coins ?? 0) + coinsEarned;
+    const newLevel = Math.floor(newXp / 500) + 1;
+    const leveledUp = newLevel > (user?.level ?? 1);
+
+    await db.update(usersTable).set({ xp: newXp, coins: newCoins, level: newLevel }).where(eq(usersTable.id, userId));
+
+    await db.insert(activitiesTable).values({
+      userId,
+      type: "decision",
+      titleEn: `AI Scenario: ${scenario.titleEn}`,
+      titleAr: `سيناريو ذكاء اصطناعي: ${scenario.titleAr}`,
+      descriptionEn: feedbackEn,
+      descriptionAr: feedbackAr,
+      xpChange: xpEarned,
+      coinsChange: coinsEarned,
+    });
+
+    res.json(RespondToScenarioResponse.parse({ xpEarned, coinsEarned, feedbackEn, feedbackAr, impactSummaryEn, impactSummaryAr, leveledUp, newLevel: leveledUp ? newLevel : null }));
   } catch (err) {
-    logger.warn({ err }, "AI feedback generation failed, using fallback");
+    logger.error({ err }, "Scenario respond failed");
+    res.status(500).json({ error: "Failed to process response" });
   }
-
-  const xpEarned = chosen.xpReward;
-  const coinsEarned = Math.floor(xpEarned / 3);
-
-  // Persist
-  await db
-    .update(aiScenariosTable)
-    .set({
-      responded: true,
-      isActive: false,
-      chosenOptionId: body.data.optionId,
-      feedbackEn,
-      feedbackAr,
-      xpEarned,
-    })
-    .where(eq(aiScenariosTable.id, scenario.id));
-
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, DEFAULT_USER_ID));
-  const newXp = (user?.xp ?? 0) + xpEarned;
-  const newCoins = (user?.coins ?? 0) + coinsEarned;
-  const newLevel = Math.floor(newXp / 500) + 1;
-  const leveledUp = newLevel > (user?.level ?? 1);
-
-  await db.update(usersTable).set({ xp: newXp, coins: newCoins, level: newLevel }).where(eq(usersTable.id, DEFAULT_USER_ID));
-
-  await db.insert(activitiesTable).values({
-    userId: DEFAULT_USER_ID,
-    type: "decision",
-    titleEn: `AI Scenario: ${scenario.titleEn}`,
-    titleAr: `سيناريو ذكاء اصطناعي: ${scenario.titleAr}`,
-    descriptionEn: feedbackEn,
-    descriptionAr: feedbackAr,
-    xpChange: xpEarned,
-    coinsChange: coinsEarned,
-  });
-
-  res.json(
-    RespondToScenarioResponse.parse({
-      xpEarned,
-      coinsEarned,
-      feedbackEn,
-      feedbackAr,
-      impactSummaryEn,
-      impactSummaryAr,
-      leveledUp,
-      newLevel: leveledUp ? newLevel : null,
-    })
-  );
 });
 
 export default router;

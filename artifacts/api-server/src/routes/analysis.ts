@@ -16,7 +16,6 @@ import { openai, AI_MODEL, extractJson } from "../lib/openai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
-const DEFAULT_USER_ID = 1;
 
 function parseAnalysis(row: typeof personalityAnalysesTable.$inferSelect) {
   return {
@@ -36,10 +35,12 @@ function parseAnalysis(row: typeof personalityAnalysesTable.$inferSelect) {
 }
 
 router.get("/analysis/personality", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const [analysis] = await db
     .select()
     .from(personalityAnalysesTable)
-    .where(eq(personalityAnalysesTable.userId, DEFAULT_USER_ID))
+    .where(eq(personalityAnalysesTable.userId, userId))
     .orderBy(desc(personalityAnalysesTable.createdAt))
     .limit(1);
 
@@ -52,38 +53,29 @@ router.get("/analysis/personality", async (req, res): Promise<void> => {
 });
 
 router.post("/analysis/personality/generate", async (req, res): Promise<void> => {
-  // Collect decision data
+  const userId = req.session.userId!;
+
   const decisions = await db
     .select()
     .from(userDecisionsTable)
-    .where(eq(userDecisionsTable.userId, DEFAULT_USER_ID))
+    .where(eq(userDecisionsTable.userId, userId))
     .orderBy(desc(userDecisionsTable.createdAt))
     .limit(20);
 
   const aiScenarioDecisions = await db
     .select()
     .from(aiScenariosTable)
-    .where(eq(aiScenariosTable.userId, DEFAULT_USER_ID))
+    .where(eq(aiScenariosTable.userId, userId))
     .orderBy(desc(aiScenariosTable.createdAt))
     .limit(10);
 
-  // Build decision summary
   const decisionSummaries: string[] = [];
 
   for (const d of decisions) {
-    const [ev] = await db
-      .select()
-      .from(economicEventsTable)
-      .where(eq(economicEventsTable.id, d.eventId));
-    const [opt] = await db
-      .select()
-      .from(eventOptionsTable)
-      .where(eq(eventOptionsTable.eventId, d.eventId));
-
+    const [ev] = await db.select().from(economicEventsTable).where(eq(economicEventsTable.id, d.eventId));
+    const [opt] = await db.select().from(eventOptionsTable).where(eq(eventOptionsTable.eventId, d.eventId));
     if (ev && opt) {
-      decisionSummaries.push(
-        `Event: "${ev.titleEn}" (${ev.type}) → Chose: "${opt.labelEn}" (${opt.riskLevel} risk), XP: ${d.xpEarned}`
-      );
+      decisionSummaries.push(`Event: "${ev.titleEn}" (${ev.type}) → Chose: "${opt.labelEn}" (${opt.riskLevel} risk), XP: ${d.xpEarned}`);
     }
   }
 
@@ -91,9 +83,7 @@ router.post("/analysis/personality/generate", async (req, res): Promise<void> =>
     const opts = JSON.parse(s.optionsJson) as Array<{ id: string; labelEn: string; riskLevel: string }>;
     const chosen = opts.find((o) => o.id === s.chosenOptionId);
     if (chosen) {
-      decisionSummaries.push(
-        `AI Scenario: "${s.titleEn}" (${s.type}) → Chose: "${chosen.labelEn}" (${chosen.riskLevel} risk), XP: ${s.xpEarned}`
-      );
+      decisionSummaries.push(`AI Scenario: "${s.titleEn}" (${s.type}) → Chose: "${chosen.labelEn}" (${chosen.riskLevel} risk), XP: ${s.xpEarned}`);
     }
   }
 
@@ -120,33 +110,31 @@ Be specific, insightful, and culturally aware. Output ONLY valid JSON.`,
 DECISION HISTORY:
 ${decisionContext}
 
-Output JSON with this EXACT structure (no markdown, no extra text):
+Output this exact JSON:
 {
-  "personalityTypeEn": "One of: Disciplined Saver | Strategic Investor | Cautious Planner | Bold Risk-Taker | Impulsive Spender | Balanced Optimizer",
-  "personalityTypeAr": "المقابل العربي للنوع أعلاه مثل: المدخر المنضبط | المستثمر الاستراتيجي | المخطط الحذر | المجازف الجريء | المنفق المتهور | المحسّن المتوازن",
-  "descriptionEn": "3-4 sentences describing this financial personality type, specific to what the decisions reveal",
-  "descriptionAr": "3-4 جمل تصف هذا النوع المالي الشخصي، محددة بما تكشفه القرارات",
+  "personalityTypeEn": "Type name (e.g. 'The Cautious Planner')",
+  "personalityTypeAr": "اسم النوع",
+  "descriptionEn": "3-4 sentences describing this financial personality",
+  "descriptionAr": "3-4 جمل تصف هذه الشخصية المالية",
   "strengths": [
-    {"en": "strength 1", "ar": "نقطة قوة 1"},
-    {"en": "strength 2", "ar": "نقطة قوة 2"},
-    {"en": "strength 3", "ar": "نقطة قوة 3"}
+    {"titleEn": "...", "titleAr": "...", "descriptionEn": "...", "descriptionAr": "..."}
   ],
   "improvements": [
-    {"en": "improvement area 1", "ar": "مجال تحسين 1"},
-    {"en": "improvement area 2", "ar": "مجال تحسين 2"},
-    {"en": "improvement area 3", "ar": "مجال تحسين 3"}
+    {"titleEn": "...", "titleAr": "...", "descriptionEn": "...", "descriptionAr": "..."}
   ],
   "traits": [
-    {"nameEn": "Risk Tolerance", "nameAr": "تحمل المخاطر", "score": <0-100>, "descriptionEn": "brief", "descriptionAr": "موجز"},
-    {"nameEn": "Savings Discipline", "nameAr": "انضباط الادخار", "score": <0-100>, "descriptionEn": "brief", "descriptionAr": "موجز"},
-    {"nameEn": "Investment Mindset", "nameAr": "عقلية الاستثمار", "score": <0-100>, "descriptionEn": "brief", "descriptionAr": "موجز"},
-    {"nameEn": "Financial Patience", "nameAr": "الصبر المالي", "score": <0-100>, "descriptionEn": "brief", "descriptionAr": "موجز"},
-    {"nameEn": "Budget Adherence", "nameAr": "الالتزام بالميزانية", "score": <0-100>, "descriptionEn": "brief", "descriptionAr": "موجز"}
+    {"nameEn": "Risk Tolerance", "nameAr": "تحمل المخاطر", "score": <0-100>},
+    {"nameEn": "Savings Discipline", "nameAr": "انضباط الادخار", "score": <0-100>},
+    {"nameEn": "Investment Mindset", "nameAr": "عقلية الاستثمار", "score": <0-100>},
+    {"nameEn": "Financial Patience", "nameAr": "الصبر المالي", "score": <0-100>},
+    {"nameEn": "Budget Adherence", "nameAr": "الالتزام بالميزانية", "score": <0-100>}
   ],
   "overallScore": <50-95>,
-  "badgeEn": "short badge title e.g. 'Financial Warrior'",
-  "badgeAr": "لقب قصير مثل 'المحارب المالي'"
-}`,
+  "badgeEn": "Badge title",
+  "badgeAr": "عنوان الشارة"
+}
+
+Include 3 strengths and 3 improvements.`,
         },
       ],
     });
@@ -157,7 +145,7 @@ Output JSON with this EXACT structure (no markdown, no extra text):
     const [row] = await db
       .insert(personalityAnalysesTable)
       .values({
-        userId: DEFAULT_USER_ID,
+        userId,
         personalityTypeEn: data.personalityTypeEn,
         personalityTypeAr: data.personalityTypeAr,
         descriptionEn: data.descriptionEn,
@@ -165,16 +153,16 @@ Output JSON with this EXACT structure (no markdown, no extra text):
         strengthsJson: JSON.stringify(data.strengths ?? []),
         improvementsJson: JSON.stringify(data.improvements ?? []),
         traitsJson: JSON.stringify(data.traits ?? []),
-        overallScore: data.overallScore ?? 70,
+        overallScore: data.overallScore ?? 75,
         badgeEn: data.badgeEn ?? "Financial Explorer",
-        badgeAr: data.badgeAr ?? "المستكشف المالي",
+        badgeAr: data.badgeAr ?? "مستكشف مالي",
       })
       .returning();
 
     res.json(GeneratePersonalityAnalysisResponse.parse(parseAnalysis(row)));
   } catch (err) {
-    logger.error({ err }, "OpenAI personality analysis failed");
-    res.status(500).json({ error: "Failed to generate analysis" });
+    logger.error({ err }, "Personality analysis generation failed");
+    res.status(500).json({ error: "Failed to generate personality analysis" });
   }
 });
 

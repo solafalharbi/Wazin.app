@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc } from "drizzle-orm";
-import { db, usersTable, activitiesTable, userDecisionsTable } from "@workspace/db";
+import { db, usersTable, activitiesTable } from "@workspace/db";
 import {
   GetDashboardSummaryResponse,
   GetActivityFeedResponse,
@@ -8,13 +8,14 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
-const DEFAULT_USER_ID = 1;
 
 router.get("/dashboard/summary", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.id, DEFAULT_USER_ID));
+    .where(eq(usersTable.id, userId));
 
   if (!user) {
     res.status(404).json({ error: "User not found" });
@@ -50,10 +51,12 @@ router.get("/dashboard/summary", async (req, res): Promise<void> => {
 });
 
 router.get("/dashboard/activity", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const activities = await db
     .select()
     .from(activitiesTable)
-    .where(eq(activitiesTable.userId, DEFAULT_USER_ID))
+    .where(eq(activitiesTable.userId, userId))
     .orderBy(desc(activitiesTable.createdAt))
     .limit(20);
 

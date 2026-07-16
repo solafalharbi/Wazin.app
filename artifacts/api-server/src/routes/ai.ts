@@ -11,13 +11,14 @@ import { openai, AI_MODEL, extractJson } from "../lib/openai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
-const DEFAULT_USER_ID = 1;
 
 router.get("/ai/chat", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const messages = await db
     .select()
     .from(chatMessagesTable)
-    .where(eq(chatMessagesTable.userId, DEFAULT_USER_ID))
+    .where(eq(chatMessagesTable.userId, userId))
     .orderBy(chatMessagesTable.createdAt)
     .limit(50);
 
@@ -25,79 +26,81 @@ router.get("/ai/chat", async (req, res): Promise<void> => {
 });
 
 router.post("/ai/chat", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const parsed = SendChatMessageBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
 
-  const { message, language } = parsed.data;
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
 
-  // Persist user message
+  // Save user message
   await db.insert(chatMessagesTable).values({
-    userId: DEFAULT_USER_ID,
+    userId,
     role: "user",
-    contentEn: language === "en" ? message : message,
-    contentAr: language === "ar" ? message : message,
+    contentEn: parsed.data.message,
+    contentAr: parsed.data.message,
   });
 
-  // Get recent history for context
+  // Fetch recent history for context
   const history = await db
     .select()
     .from(chatMessagesTable)
-    .where(eq(chatMessagesTable.userId, DEFAULT_USER_ID))
+    .where(eq(chatMessagesTable.userId, userId))
     .orderBy(desc(chatMessagesTable.createdAt))
-    .limit(8);
+    .limit(10);
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, DEFAULT_USER_ID));
-
-  const historyMessages = history
-    .reverse()
-    .slice(0, -1) // exclude the message we just inserted
-    .map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: language === "ar" ? m.contentAr : m.contentEn,
-    }));
+  const historyMessages = history.reverse().slice(0, -1).map((m) => ({
+    role: m.role as "user" | "assistant",
+    content: m.contentEn,
+  }));
 
   try {
     const completion = await openai.chat.completions.create({
       model: AI_MODEL,
-      max_tokens: 600,
+      max_tokens: 500,
       messages: [
         {
           role: "system",
-          content: `You are Wazin AI (وازِن), a warm, expert financial advisor for young Saudi users.
-User: ${user?.username ?? "Solaf"}, Level ${user?.level ?? 7}, XP ${user?.xp ?? 3120}, Coins ${user?.coins ?? 850}.
-Language: ${language === "ar" ? "Arabic — respond ONLY in Arabic, using formal yet friendly Saudi tone" : "English — respond in clear, friendly English"}.
-Keep responses concise (3-5 sentences). Be encouraging, specific, and action-oriented.
-Relate advice to real Saudi financial context (Alinma Bank, Vision 2030, real estate, etc.).`,
+          content: `You are Wazin AI Advisor (مستشار وازِن), a friendly bilingual (Arabic/English) financial coach for young Saudis.
+User: ${user?.username ?? "User"}, Level ${user?.level ?? 1}, XP ${user?.xp ?? 0}, Coins ${user?.coins ?? 0}
+Respond in the same language as the user's message. Keep responses concise (2–4 sentences). Be encouraging and practical.`,
         },
         ...historyMessages,
-        { role: "user", content: message },
+        { role: "user", content: parsed.data.message },
       ],
     });
 
-    const aiContent = completion.choices[0]?.message?.content ?? "";
+    const reply = completion.choices[0]?.message?.content ?? "I'm here to help with your finances!";
 
-    const [aiMsg] = await db
+    const [saved] = await db
       .insert(chatMessagesTable)
       .values({
-        userId: DEFAULT_USER_ID,
+        userId,
         role: "assistant",
-        contentEn: language === "en" ? aiContent : aiContent,
-        contentAr: language === "ar" ? aiContent : aiContent,
+        contentEn: reply,
+        contentAr: reply,
       })
       .returning();
 
-    res.json(SendChatMessageResponse.parse({ ...aiMsg, createdAt: aiMsg.createdAt.toISOString() }));
+    res.json(SendChatMessageResponse.parse({ ...saved, createdAt: saved.createdAt.toISOString() }));
   } catch (err) {
-    logger.error({ err }, "OpenAI chat failed");
-    res.status(500).json({ error: "AI advisor temporarily unavailable" });
+    logger.error({ err }, "AI chat failed");
+    const fallback = "I'm having trouble right now. Please try again in a moment.";
+    const [saved] = await db
+      .insert(chatMessagesTable)
+      .values({ userId, role: "assistant", contentEn: fallback, contentAr: "أواجه صعوبة الآن. يرجى المحاولة مرة أخرى." })
+      .returning();
+    res.json(SendChatMessageResponse.parse({ ...saved, createdAt: saved.createdAt.toISOString() }));
   }
 });
 
 router.get("/ai/insight", async (req, res): Promise<void> => {
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, DEFAULT_USER_ID));
+  const userId = req.session.userId!;
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
 
   try {
     const completion = await openai.chat.completions.create({
@@ -111,7 +114,7 @@ router.get("/ai/insight", async (req, res): Promise<void> => {
         {
           role: "user",
           content: `Generate a financial insight for:
-User: Level ${user?.level ?? 7}, XP ${user?.xp ?? 3120}, Coins ${user?.coins ?? 850}
+User: Level ${user?.level ?? 1}, XP ${user?.xp ?? 0}, Coins ${user?.coins ?? 0}
 Budget health: 78/100, Savings rate: 22%
 
 Output JSON:
@@ -137,14 +140,14 @@ Output JSON:
     logger.warn({ err }, "AI insight generation failed, using fallback");
     res.json(
       GetAIInsightResponse.parse({
-        summaryEn: "Your financial health is strong this month! You're saving 22% and making smart decisions.",
-        summaryAr: "صحتك المالية قوية هذا الشهر! أنت توفر 22٪ وتتخذ قرارات ذكية.",
+        summaryEn: "Your financial health is strong this month! You're making smart decisions.",
+        summaryAr: "صحتك المالية قوية هذا الشهر! أنت تتخذ قرارات ذكية.",
         score: 78,
         trend: "improving",
         tips: [
-          { titleEn: "Boost Savings", titleAr: "زيادة الادخار", descriptionEn: "Try saving 25% to reach your emergency fund 2 months sooner.", descriptionAr: "حاول ادخار 25٪ للوصول إلى صندوق الطوارئ بشهرين أقل.", priority: "high" },
+          { titleEn: "Boost Savings", titleAr: "زيادة الادخار", descriptionEn: "Try saving 25% to reach your emergency fund sooner.", descriptionAr: "حاول ادخار 25٪ للوصول إلى صندوق الطوارئ أسرع.", priority: "high" },
           { titleEn: "Invest Wisely", titleAr: "استثمر بحكمة", descriptionEn: "Consider putting 5% of income in low-risk bonds.", descriptionAr: "فكر في وضع 5٪ من دخلك في السندات منخفضة المخاطر.", priority: "medium" },
-          { titleEn: "Track Spending", titleAr: "تتبع الإنفاق", descriptionEn: "Dining out is your biggest variable expense — cook at home twice more weekly.", descriptionAr: "تناول الطعام خارجاً هو أكبر نفقاتك المتغيرة — اطبخ في المنزل مرتين أسبوعياً.", priority: "low" },
+          { titleEn: "Track Spending", titleAr: "تتبع الإنفاق", descriptionEn: "Cook at home twice more weekly to cut dining costs.", descriptionAr: "اطبخ في المنزل مرتين أسبوعياً لتقليل نفقات الطعام.", priority: "low" },
         ],
       })
     );

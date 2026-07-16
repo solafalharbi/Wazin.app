@@ -10,7 +10,6 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
-const DEFAULT_USER_ID = 1;
 
 function formatReward(r: typeof rewardsTable.$inferSelect) {
   return {
@@ -39,10 +38,12 @@ router.get("/rewards", async (req, res): Promise<void> => {
 });
 
 router.get("/rewards/my", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const userRewards = await db
     .select()
     .from(userRewardsTable)
-    .where(eq(userRewardsTable.userId, DEFAULT_USER_ID))
+    .where(eq(userRewardsTable.userId, userId))
     .orderBy(desc(userRewardsTable.earnedAt));
 
   const result = await Promise.all(
@@ -66,6 +67,8 @@ router.get("/rewards/my", async (req, res): Promise<void> => {
 });
 
 router.post("/rewards/:rewardId/redeem", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const rawId = Array.isArray(req.params.rewardId) ? req.params.rewardId[0] : req.params.rewardId;
   const params = RedeemRewardParams.safeParse({ rewardId: rawId });
   if (!params.success) {
@@ -86,7 +89,7 @@ router.post("/rewards/:rewardId/redeem", async (req, res): Promise<void> => {
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.id, DEFAULT_USER_ID));
+    .where(eq(usersTable.id, userId));
 
   if (!user || user.coins < reward.coinsRequired) {
     res.json(
@@ -100,21 +103,19 @@ router.post("/rewards/:rewardId/redeem", async (req, res): Promise<void> => {
     return;
   }
 
-  // Deduct coins
   await db
     .update(usersTable)
     .set({ coins: user.coins - reward.coinsRequired })
-    .where(eq(usersTable.id, DEFAULT_USER_ID));
+    .where(eq(usersTable.id, userId));
 
   const redemptionCode = `ALINMA-${randomBytes(4).toString("hex").toUpperCase()}`;
 
-  // Upsert user reward record
   const [existingUserReward] = await db
     .select()
     .from(userRewardsTable)
     .where(
       and(
-        eq(userRewardsTable.userId, DEFAULT_USER_ID),
+        eq(userRewardsTable.userId, userId),
         eq(userRewardsTable.rewardId, params.data.rewardId)
       )
     )
@@ -127,7 +128,7 @@ router.post("/rewards/:rewardId/redeem", async (req, res): Promise<void> => {
       .where(eq(userRewardsTable.id, existingUserReward.id));
   } else {
     await db.insert(userRewardsTable).values({
-      userId: DEFAULT_USER_ID,
+      userId,
       rewardId: params.data.rewardId,
       status: "redeemed",
       redemptionCode,

@@ -10,7 +10,6 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
-const DEFAULT_USER_ID = 1;
 
 const DEFAULT_ALLOCATIONS = [
   { category: "Housing", categoryAr: "السكن", allocated: "2500", spent: "2500", limit: "2800", icon: "home" },
@@ -35,10 +34,12 @@ function formatAllocation(alloc: typeof DEFAULT_ALLOCATIONS[0] & { id?: number; 
 }
 
 router.get("/simulation/state", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const [sim] = await db
     .select()
     .from(simulationsTable)
-    .where(eq(simulationsTable.userId, DEFAULT_USER_ID))
+    .where(eq(simulationsTable.userId, userId))
     .orderBy(desc(simulationsTable.createdAt))
     .limit(1);
 
@@ -52,7 +53,7 @@ router.get("/simulation/state", async (req, res): Promise<void> => {
     .from(budgetAllocationsTable)
     .where(eq(budgetAllocationsTable.simulationId, sim.id));
 
-  const response = {
+  res.json(GetSimulationStateResponse.parse({
     id: sim.id,
     month: sim.month,
     year: sim.year,
@@ -62,12 +63,12 @@ router.get("/simulation/state", async (req, res): Promise<void> => {
     xpEarned: sim.xpEarned,
     status: sim.status,
     pendingEvents: 2,
-  };
-
-  res.json(GetSimulationStateResponse.parse(response));
+  }));
 });
 
 router.post("/simulation/start", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const parsed = StartSimulationBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -78,7 +79,7 @@ router.post("/simulation/start", async (req, res): Promise<void> => {
   const [sim] = await db
     .insert(simulationsTable)
     .values({
-      userId: DEFAULT_USER_ID,
+      userId,
       month: now.getMonth() + 1,
       year: now.getFullYear(),
       totalBudget: parsed.data.monthlyIncome.toString(),
@@ -97,9 +98,9 @@ router.post("/simulation/start", async (req, res): Promise<void> => {
       simulationId: sim.id,
       category: a.category,
       categoryAr: a.categoryAr,
-      allocated: (newAllocated).toString(),
+      allocated: newAllocated.toString(),
       spent: "0",
-      limit: (Math.round(newAllocated * 1.15)).toString(),
+      limit: Math.round(newAllocated * 1.15).toString(),
       icon: a.icon,
     };
   });
@@ -111,7 +112,7 @@ router.post("/simulation/start", async (req, res): Promise<void> => {
     .from(budgetAllocationsTable)
     .where(eq(budgetAllocationsTable.simulationId, sim.id));
 
-  const response = {
+  res.json(StartSimulationResponse.parse({
     id: sim.id,
     month: sim.month,
     year: sim.year,
@@ -121,12 +122,12 @@ router.post("/simulation/start", async (req, res): Promise<void> => {
     xpEarned: sim.xpEarned,
     status: sim.status,
     pendingEvents: 0,
-  };
-
-  res.json(StartSimulationResponse.parse(response));
+  }));
 });
 
 router.post("/simulation/allocate", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const parsed = AllocateBudgetBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -136,7 +137,7 @@ router.post("/simulation/allocate", async (req, res): Promise<void> => {
   const [sim] = await db
     .select()
     .from(simulationsTable)
-    .where(eq(simulationsTable.userId, DEFAULT_USER_ID))
+    .where(eq(simulationsTable.userId, userId))
     .orderBy(desc(simulationsTable.createdAt))
     .limit(1);
 
@@ -172,7 +173,7 @@ router.post("/simulation/allocate", async (req, res): Promise<void> => {
     .where(eq(simulationsTable.id, sim.id))
     .returning();
 
-  const response = {
+  res.json(AllocateBudgetResponse.parse({
     id: updated.id,
     month: updated.month,
     year: updated.year,
@@ -182,9 +183,7 @@ router.post("/simulation/allocate", async (req, res): Promise<void> => {
     xpEarned: updated.xpEarned,
     status: updated.status,
     pendingEvents: 2,
-  };
-
-  res.json(AllocateBudgetResponse.parse(response));
+  }));
 });
 
 export default router;

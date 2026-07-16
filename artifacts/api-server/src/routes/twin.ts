@@ -17,32 +17,29 @@ import { openai, AI_MODEL, extractJson } from "../lib/openai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
-const DEFAULT_USER_ID = 1;
 
 function parseTwin(row: typeof financialTwinsTable.$inferSelect) {
-  const projection = JSON.parse(row.projectionJson);
-  const risks = JSON.parse(row.risksJson);
-  const goals = JSON.parse(row.goalsJson);
-  const scenarios = JSON.parse(row.scenariosJson);
   return {
     id: row.id,
     summaryEn: row.summaryEn,
     summaryAr: row.summaryAr,
     currentMonthlyIncome: parseFloat(row.currentMonthlyIncome),
     currentSavingsRate: parseFloat(row.currentSavingsRate),
-    projection,
-    risks,
-    goals,
-    scenarios,
+    projection: JSON.parse(row.projectionJson),
+    risks: JSON.parse(row.risksJson),
+    goals: JSON.parse(row.goalsJson),
+    scenarios: JSON.parse(row.scenariosJson),
     createdAt: row.createdAt.toISOString(),
   };
 }
 
 router.get("/twin/projection", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+
   const [twin] = await db
     .select()
     .from(financialTwinsTable)
-    .where(eq(financialTwinsTable.userId, DEFAULT_USER_ID))
+    .where(eq(financialTwinsTable.userId, userId))
     .orderBy(desc(financialTwinsTable.createdAt))
     .limit(1);
 
@@ -55,11 +52,13 @@ router.get("/twin/projection", async (req, res): Promise<void> => {
 });
 
 router.post("/twin/generate", async (req, res): Promise<void> => {
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, DEFAULT_USER_ID));
+  const userId = req.session.userId!;
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
   const [sim] = await db
     .select()
     .from(simulationsTable)
-    .where(eq(simulationsTable.userId, DEFAULT_USER_ID))
+    .where(eq(simulationsTable.userId, userId))
     .orderBy(desc(simulationsTable.createdAt))
     .limit(1);
 
@@ -75,21 +74,21 @@ router.post("/twin/generate", async (req, res): Promise<void> => {
   const decisions = await db
     .select()
     .from(userDecisionsTable)
-    .where(eq(userDecisionsTable.userId, DEFAULT_USER_ID))
+    .where(eq(userDecisionsTable.userId, userId))
     .orderBy(desc(userDecisionsTable.createdAt))
     .limit(10);
 
   const [latestAnalysis] = await db
     .select()
     .from(personalityAnalysesTable)
-    .where(eq(personalityAnalysesTable.userId, DEFAULT_USER_ID))
+    .where(eq(personalityAnalysesTable.userId, userId))
     .orderBy(desc(personalityAnalysesTable.createdAt))
     .limit(1);
 
   const currentYear = new Date().getFullYear();
 
   const userContext = `
-User: ${user?.username ?? "Solaf"}, Level ${user?.level ?? 7}
+User: ${user?.username ?? "User"}, Level ${user?.level ?? 1}
 Monthly Income: SAR ${monthlyIncome}
 Monthly Savings: SAR ${monthlySavings.toFixed(0)}
 Savings Rate: ${savingsRate}%
@@ -114,71 +113,41 @@ Output ONLY valid JSON — no markdown, no commentary.`,
         },
         {
           role: "user",
-          content: `Generate a Financial Twin 10-year projection for this user:
+          content: `Generate a 10-year financial twin projection for this user:
 
 ${userContext}
 
-Output this EXACT JSON structure:
+Output this exact JSON structure:
 {
-  "summaryEn": "2-3 sentence executive summary of the user's financial trajectory",
-  "summaryAr": "ملخص تنفيذي من 2-3 جمل عن المسار المالي للمستخدم",
+  "summaryEn": "2-3 sentence overview of their financial trajectory",
+  "summaryAr": "نظرة عامة من 2-3 جمل عن مسارهم المالي",
   "projection": [
-    {
-      "year": ${currentYear + 1},
-      "savings": <cumulative savings in SAR>,
-      "netWorth": <estimated net worth in SAR>,
-      "income": <annual income in SAR>,
-      "expenses": <annual expenses in SAR>,
-      "milestone": "milestone label if notable year, else null",
-      "milestoneAr": "Arabic milestone label or null"
-    }
-    // ... repeat for years ${currentYear + 1} through ${currentYear + 10}
+    {"year": ${currentYear + 1}, "savings": <SAR>, "netWorth": <SAR>, "income": <SAR>, "expenses": <SAR>, "milestone": "string or null", "milestoneAr": "string or null"}
   ],
   "risks": [
-    {
-      "titleEn": "Risk title",
-      "titleAr": "عنوان المخاطرة",
-      "descriptionEn": "What could go wrong",
-      "descriptionAr": "ما الذي قد يسوء",
-      "severity": "low|medium|high",
-      "probability": <0-100>
-    }
+    {"titleEn": "...", "titleAr": "...", "descriptionEn": "...", "descriptionAr": "...", "severity": "high|medium|low"}
   ],
   "goals": [
-    {
-      "titleEn": "Goal title",
-      "titleAr": "عنوان الهدف",
-      "descriptionEn": "How to achieve it",
-      "descriptionAr": "كيفية تحقيقه",
-      "targetYear": <year>,
-      "targetAmount": <SAR amount>,
-      "isAchievable": <true|false>
-    }
+    {"titleEn": "...", "titleAr": "...", "targetAmount": <SAR>, "timelineYears": <n>, "monthlyRequired": <SAR>}
   ],
   "scenarios": [
     {
       "type": "optimistic",
       "labelEn": "Best Case",
       "labelAr": "أفضل حالة",
-      "projections": [
-        {"year": ${currentYear + 1}, "savings": <SAR>, "netWorth": <SAR>, "income": <SAR>, "expenses": <SAR>, "milestone": null, "milestoneAr": null}
-        // ... repeat for all 10 years, 20% better outcomes
-      ]
+      "projections": [{"year": ${currentYear + 1}, "savings": <SAR>, "netWorth": <SAR>, "income": <SAR>, "expenses": <SAR>, "milestone": null, "milestoneAr": null}]
     },
     {
       "type": "base",
       "labelEn": "Expected",
       "labelAr": "المتوقع",
-      "projections": [/* same as main projection */]
+      "projections": []
     },
     {
       "type": "pessimistic",
       "labelEn": "Worst Case",
       "labelAr": "أسوأ حالة",
-      "projections": [
-        {"year": ${currentYear + 1}, "savings": <SAR>, "netWorth": <SAR>, "income": <SAR>, "expenses": <SAR>, "milestone": null, "milestoneAr": null}
-        // ... repeat for all 10 years, 30% worse outcomes
-      ]
+      "projections": [{"year": ${currentYear + 1}, "savings": <SAR>, "netWorth": <SAR>, "income": <SAR>, "expenses": <SAR>, "milestone": null, "milestoneAr": null}]
     }
   ]
 }
@@ -194,7 +163,7 @@ Include 3 risks and 3 goals. Make projections culturally relevant to Saudi Arabi
     const [row] = await db
       .insert(financialTwinsTable)
       .values({
-        userId: DEFAULT_USER_ID,
+        userId,
         summaryEn: data.summaryEn,
         summaryAr: data.summaryAr,
         currentMonthlyIncome: String(monthlyIncome),
@@ -208,7 +177,7 @@ Include 3 risks and 3 goals. Make projections culturally relevant to Saudi Arabi
 
     res.json(GenerateTwinProjectionResponse.parse(parseTwin(row)));
   } catch (err) {
-    logger.error({ err }, "OpenAI financial twin generation failed");
+    logger.error({ err }, "Financial twin generation failed");
     res.status(500).json({ error: "Failed to generate Financial Twin" });
   }
 });

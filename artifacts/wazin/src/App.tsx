@@ -2,9 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
-import { Route, Switch, Router as WouterRouter } from 'wouter';
+import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import { ThemeProvider } from 'next-themes';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 
 import Layout from '@/components/Layout';
 import Dashboard from '@/pages/Dashboard';
@@ -17,10 +18,50 @@ import Profile from '@/pages/Profile';
 import Scenarios from '@/pages/Scenarios';
 import PersonalityAnalysis from '@/pages/PersonalityAnalysis';
 import FinancialTwin from '@/pages/FinancialTwin';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,
+    },
+  },
+});
 
-function Router() {
+function AuthGate() {
+  const { user, isLoading } = useAuth();
+  const [location, navigate] = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-purple-600 flex items-center justify-center animate-pulse">
+            <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 text-white" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3C8 3 4 6 4 10c0 5 8 11 8 11s8-6 8-11c0-4-4-7-8-7z" />
+              <circle cx="12" cy="10" r="3" fill="currentColor" />
+            </svg>
+          </div>
+          <p className="text-muted-foreground text-sm">Loading Wazin…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Switch>
+        <Route path="/login" component={Login} />
+        <Route path="/register" component={Register} />
+        <Route>
+          <Login />
+        </Route>
+      </Switch>
+    );
+  }
+
   return (
     <Layout>
       <Switch>
@@ -47,7 +88,9 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-              <Router />
+              <AuthProvider>
+                <AuthGate />
+              </AuthProvider>
             </WouterRouter>
             <Toaster />
           </TooltipProvider>
