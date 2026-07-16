@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
+import { getAuthToken } from "@workspace/api-client-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,10 +33,29 @@ export default function Login() {
     }
   };
 
-  const fillDemo = () => {
-    setEmail("solaf@wazin.app");
-    setPassword("solaf2024");
+  const fillDemo = async () => {
     setError("");
+    setLoading(true);
+    try {
+      const token = await getAuthToken();
+      const res = await fetch("/api/auth/demo", {
+        method: "POST",
+        credentials: "include",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error("Demo login failed");
+      const user = await res.json();
+      // AuthContext.login updates user state — replicate that via refreshUser
+      // by importing useAuth which already handles this. We call login with a
+      // sentinel so we can reuse the context; simpler: just hit /auth/me after.
+      navigate("/");
+      // Force a page reload so AuthContext re-hydrates from the new session.
+      window.location.href = "/";
+    } catch (err) {
+      setError("Demo login failed — please try again");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

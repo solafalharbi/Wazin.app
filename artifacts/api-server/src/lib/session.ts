@@ -25,7 +25,7 @@ export const sessionMiddleware = session({
 });
 
 // Paths (relative to /api mount) that are accessible without a session.
-const PUBLIC_PATHS = new Set(["/healthz", "/auth/login", "/auth/register", "/auth/me"]);
+const PUBLIC_PATHS = new Set(["/healthz", "/auth/login", "/auth/register", "/auth/me", "/auth/demo"]);
 
 /**
  * Middleware that enforces an authenticated session on all /api routes

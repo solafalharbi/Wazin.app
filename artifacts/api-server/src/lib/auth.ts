@@ -17,7 +17,7 @@ if (!API_TOKEN) {
 export function requireApiToken(req: Request, res: Response, next: NextFunction): void {
   // Always allow health-check probes.
   // Always allow auth endpoints — they're the entry point for obtaining a session.
-  if (req.path === "/healthz" || req.path.startsWith("/auth/")) {
+  if (req.path === "/healthz" || req.path.startsWith("/auth/") || req.path === "/auth/demo") {
     next();
     return;
   }
