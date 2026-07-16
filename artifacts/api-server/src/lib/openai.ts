@@ -12,6 +12,7 @@ export const openai = new OpenAI({
 
 export const AI_MODEL = "google/gemini-2.5-flash";
 
+
 /**
  * Extract and parse JSON from an LLM completion that is expected to return
  * pure JSON but may wrap it in markdown code fences, add commentary, or

@@ -99,60 +99,67 @@ Average XP per Decision: ${decisions.length > 0 ? Math.round(decisions.reduce((s
 Current Year: ${currentYear}
 `;
 
+  const years = Array.from({ length: 5 }, (_, i) => currentYear + 1 + i);
+
   try {
     const completion = await openai.chat.completions.create({
       model: AI_MODEL,
-      max_tokens: 8192,
+      max_tokens: 2500,
       messages: [
         {
           role: "system",
-          content: `You are a financial projection expert for Saudi Arabia's Vision 2030 era.
-Generate realistic 10-year financial projections based on current behavior.
-All monetary values in Saudi Riyals (SAR). Be specific and realistic.
-Output ONLY valid JSON — no markdown, no commentary.`,
+          content: `You are a financial projection expert for Saudi Arabia. Output ONLY valid JSON, no markdown.`,
         },
         {
           role: "user",
-          content: `Generate a 10-year financial twin projection for this user:
-
+          content: `Generate a 5-year financial twin for this user:
 ${userContext}
 
-Output this exact JSON structure:
+Return EXACTLY this JSON (no extra fields, no comments):
 {
-  "summaryEn": "2-3 sentence overview of their financial trajectory",
-  "summaryAr": "نظرة عامة من 2-3 جمل عن مسارهم المالي",
+  "summaryEn": "2 sentences on their financial trajectory",
+  "summaryAr": "جملتان عن مسارهم المالي",
   "projection": [
-    {"year": ${currentYear + 1}, "savings": <SAR>, "netWorth": <SAR>, "income": <SAR>, "expenses": <SAR>, "milestone": "string or null", "milestoneAr": "string or null"}
+    {"year":${years[0]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+    {"year":${years[1]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+    {"year":${years[2]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+    {"year":${years[3]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+    {"year":${years[4]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null}
   ],
   "risks": [
-    {"titleEn": "...", "titleAr": "...", "descriptionEn": "...", "descriptionAr": "...", "severity": "high|medium|low"}
+    {"titleEn":"","titleAr":"","descriptionEn":"","descriptionAr":"","severity":"medium","probability":0.5},
+    {"titleEn":"","titleAr":"","descriptionEn":"","descriptionAr":"","severity":"low","probability":0.3}
   ],
   "goals": [
-    {"titleEn": "...", "titleAr": "...", "targetAmount": <SAR>, "timelineYears": <n>, "monthlyRequired": <SAR>}
+    {"titleEn":"","titleAr":"","descriptionEn":"","descriptionAr":"","targetYear":${currentYear+3},"targetAmount":0,"isAchievable":true},
+    {"titleEn":"","titleAr":"","descriptionEn":"","descriptionAr":"","targetYear":${currentYear+5},"targetAmount":0,"isAchievable":true}
   ],
   "scenarios": [
-    {
-      "type": "optimistic",
-      "labelEn": "Best Case",
-      "labelAr": "أفضل حالة",
-      "projections": [{"year": ${currentYear + 1}, "savings": <SAR>, "netWorth": <SAR>, "income": <SAR>, "expenses": <SAR>, "milestone": null, "milestoneAr": null}]
-    },
-    {
-      "type": "base",
-      "labelEn": "Expected",
-      "labelAr": "المتوقع",
-      "projections": []
-    },
-    {
-      "type": "pessimistic",
-      "labelEn": "Worst Case",
-      "labelAr": "أسوأ حالة",
-      "projections": [{"year": ${currentYear + 1}, "savings": <SAR>, "netWorth": <SAR>, "income": <SAR>, "expenses": <SAR>, "milestone": null, "milestoneAr": null}]
-    }
+    {"type":"optimistic","labelEn":"Best Case","labelAr":"أفضل حالة","projections":[
+      {"year":${years[0]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[1]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[2]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[3]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[4]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null}
+    ]},
+    {"type":"base","labelEn":"Expected","labelAr":"المتوقع","projections":[
+      {"year":${years[0]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[1]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[2]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[3]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[4]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null}
+    ]},
+    {"type":"pessimistic","labelEn":"Worst Case","labelAr":"أسوأ حالة","projections":[
+      {"year":${years[0]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[1]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[2]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[3]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null},
+      {"year":${years[4]},"savings":0,"netWorth":0,"income":0,"expenses":0,"milestone":null,"milestoneAr":null}
+    ]}
   ]
 }
 
-Include 3 risks and 3 goals. Make projections culturally relevant to Saudi Arabia.`,
+Fill ALL zero values with realistic SAR numbers based on the user profile above. severity must be "low", "medium", or "high". probability must be 0-1.`,
         },
       ],
     });

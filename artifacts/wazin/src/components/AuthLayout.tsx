@@ -3,8 +3,9 @@ import { Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const isRtl = language === "ar";
+  const toggleLanguage = () => setLanguage(isRtl ? "en" : "ar");
 
   return (
     <div className="min-h-screen w-full flex" dir={isRtl ? "rtl" : "ltr"}>
@@ -42,7 +43,19 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-background">
+      <div className="flex-1 flex items-center justify-center p-6 bg-background relative">
+        {/* Language toggle — top corner */}
+        <button
+          onClick={toggleLanguage}
+          className={cn(
+            "absolute top-5 flex items-center gap-2 px-3 py-1.5 rounded-full border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:border-[#6C4AB6]/50 transition-colors",
+            isRtl ? "left-5" : "right-5"
+          )}
+        >
+          <span className="text-base leading-none">{isRtl ? "🇬🇧" : "🇸🇦"}</span>
+          <span>{isRtl ? "English" : "العربية"}</span>
+        </button>
+
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">

@@ -34,17 +34,18 @@ export default function FinancialTwin() {
 
   const handleGenerate = () => {
     generateTwin.mutate(undefined, {
-      onSuccess: () => {
+      onSuccess: (newTwin) => {
+        queryClient.setQueryData(getGetTwinProjectionQueryKey(), newTwin);
         queryClient.invalidateQueries({ queryKey: getGetTwinProjectionQueryKey() });
         toast({
           title: t('تم إنشاء التوأم المالي!', 'Financial Twin Generated!'),
           description: t('تم حساب التوقعات المالية بنجاح.', 'Financial projections calculated successfully.'),
         });
       },
-      onError: () => {
+      onError: (err) => {
         toast({
           title: t('حدث خطأ', 'Error'),
-          description: t('لم نتمكن من توليد التوأم المالي. حاول مرة أخرى.', 'Could not generate financial twin. Try again.'),
+          description: err instanceof Error ? err.message : t('لم نتمكن من توليد التوأم المالي. حاول مرة أخرى.', 'Could not generate financial twin. Try again.'),
           variant: 'destructive',
         });
       },
