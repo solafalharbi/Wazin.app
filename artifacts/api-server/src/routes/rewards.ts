@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { randomBytes } from "crypto";
 import { eq, desc, and } from "drizzle-orm";
 import { db, rewardsTable, userRewardsTable, usersTable } from "@workspace/db";
 import {
@@ -105,7 +106,7 @@ router.post("/rewards/:rewardId/redeem", async (req, res): Promise<void> => {
     .set({ coins: user.coins - reward.coinsRequired })
     .where(eq(usersTable.id, DEFAULT_USER_ID));
 
-  const redemptionCode = `ALINMA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+  const redemptionCode = `ALINMA-${randomBytes(4).toString("hex").toUpperCase()}`;
 
   // Upsert user reward record
   const [existingUserReward] = await db
