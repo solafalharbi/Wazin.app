@@ -11,6 +11,8 @@ export const openai = new OpenAI({
 });
 
 export const AI_MODEL = "google/gemini-2.5-flash";
+// Cheaper model used for token-heavy routes when the primary model exceeds credit budget
+export const AI_MODEL_LITE = "meta-llama/llama-3.1-8b-instruct:free";
 
 
 /**
