@@ -135,7 +135,7 @@ Output this exact JSON:
       "id": "conservative",
       "labelEn": "Safe choice label",
       "labelAr": "تسمية الخيار الآمن",
-      "riskLevel": "low",
+      "riskLevel": "safe",
       "xpReward": 50,
       "outcomePreviewEn": "What happens if they choose this",
       "outcomePreviewAr": "ما يحدث إذا اختاروا هذا"
@@ -144,7 +144,7 @@ Output this exact JSON:
       "id": "balanced",
       "labelEn": "Balanced choice label",
       "labelAr": "تسمية الخيار المتوازن",
-      "riskLevel": "medium",
+      "riskLevel": "moderate",
       "xpReward": 100,
       "outcomePreviewEn": "What happens if they choose this",
       "outcomePreviewAr": "ما يحدث إذا اختاروا هذا"
@@ -153,7 +153,7 @@ Output this exact JSON:
       "id": "aggressive",
       "labelEn": "Bold choice label",
       "labelAr": "تسمية الخيار الجريء",
-      "riskLevel": "high",
+      "riskLevel": "risky",
       "xpReward": 150,
       "outcomePreviewEn": "What happens if they choose this",
       "outcomePreviewAr": "ما يحدث إذا اختاروا هذا"
@@ -167,6 +167,18 @@ Output this exact JSON:
     const raw = completion.choices[0]?.message?.content ?? "{}";
     const data = extractJson<Record<string, any>>(raw);
 
+    // Normalize riskLevel values the AI sometimes returns (low/medium/high)
+    // into the schema values (safe/moderate/risky).
+    const riskLevelMap: Record<string, string> = {
+      low: "safe",
+      medium: "moderate",
+      high: "risky",
+    };
+    const normalizedOptions = (data.options ?? []).map((opt: any) => ({
+      ...opt,
+      riskLevel: riskLevelMap[opt?.riskLevel] ?? opt?.riskLevel ?? "safe",
+    }));
+
     const [scenario] = await db
       .insert(aiScenariosTable)
       .values({
@@ -178,7 +190,7 @@ Output this exact JSON:
         type: data.type ?? scenarioType,
         severity: data.severity ?? "medium",
         impactAmount: String(data.impactAmount ?? 1000),
-        optionsJson: JSON.stringify(data.options ?? []),
+        optionsJson: JSON.stringify(normalizedOptions),
         isActive: true,
         responded: false,
         xpEarned: 0,
