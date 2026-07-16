@@ -1,11 +1,14 @@
 import express, { type Express } from "express";
 import cors from "cors";
+import helmet from "helmet";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { llmGenerateLimiter, llmChatLimiter } from "./lib/rateLimiter";
 
 const app: Express = express();
+
+app.use(helmet());
 
 app.use(
   pinoHttp({
