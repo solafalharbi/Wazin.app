@@ -88,7 +88,7 @@ export function Sidebar({ className }: { className?: string }) {
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1">
+      <nav className="flex-1 min-h-0 overflow-y-auto -mx-2 px-2 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location === item.href;
