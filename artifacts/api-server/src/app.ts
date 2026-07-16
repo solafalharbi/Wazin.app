@@ -26,7 +26,35 @@ app.use(
     },
   }),
 );
-app.use(cors());
+// Build an explicit allowlist from the Replit-injected REPLIT_DOMAINS variable
+// (comma-separated; covers both the dev proxy domain and any deployed domain).
+// Localhost variants are included so curl / local tooling still works in dev.
+const replitDomains = (process.env.REPLIT_DOMAINS ?? "")
+  .split(",")
+  .map((d) => d.trim())
+  .filter(Boolean)
+  .map((d) => `https://${d}`);
+
+const allowedOrigins = new Set([
+  ...replitDomains,
+  "http://localhost",
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:8080",
+]);
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // Allow requests with no Origin header (e.g. server-to-server, curl).
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.has(origin)) return cb(null, true);
+      // Reject: browser will block the response; no ACAO header is sent.
+      cb(null, false);
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
