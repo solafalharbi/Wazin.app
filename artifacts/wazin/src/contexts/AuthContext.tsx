@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { getAuthToken } from "@workspace/api-client-react";
+import { queryClient } from "@/lib/queryClient";
 
 export type AuthUser = {
   id: number;
@@ -76,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const err = await res.json().catch(() => ({}));
       throw new Error((err as { error?: string }).error ?? "Login failed");
     }
+    queryClient.clear();
     setUser(await res.json());
   };
 
@@ -88,11 +90,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const err = await res.json().catch(() => ({}));
       throw new Error((err as { error?: string }).error ?? "Registration failed");
     }
+    queryClient.clear();
     setUser(await res.json());
   };
 
   const logout = async () => {
     await apiFetch("/api/auth/logout", { method: "POST" });
+    queryClient.clear();
     setUser(null);
   };
 
