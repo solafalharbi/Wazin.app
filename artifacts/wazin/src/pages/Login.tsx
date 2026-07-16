@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
+const DEV_CODE = "6767";
+
 export default function Login() {
   const { login } = useAuth();
   const { language } = useLanguage();
@@ -18,6 +20,11 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Developer access state
+  const [showDevPin, setShowDevPin] = useState(false);
+  const [devPin, setDevPin] = useState("");
+  const [devPinError, setDevPinError] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -33,8 +40,19 @@ export default function Login() {
     }
   };
 
-  const fillDemo = async () => {
-    setError("");
+  const handleDevPinChange = (val: string) => {
+    if (!/^\d*$/.test(val) || val.length > 4) return;
+    setDevPin(val);
+    setDevPinError("");
+  };
+
+  const handleDevAccess = async () => {
+    if (devPin !== DEV_CODE) {
+      setDevPinError(isRtl ? "رمز غير صحيح" : "Incorrect code");
+      setDevPin("");
+      return;
+    }
+    setDevPinError("");
     setLoading(true);
     try {
       const token = await getAuthToken();
@@ -43,16 +61,10 @@ export default function Login() {
         credentials: "include",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      if (!res.ok) throw new Error("Demo login failed");
-      const user = await res.json();
-      // AuthContext.login updates user state — replicate that via refreshUser
-      // by importing useAuth which already handles this. We call login with a
-      // sentinel so we can reuse the context; simpler: just hit /auth/me after.
-      navigate("/");
-      // Force a page reload so AuthContext re-hydrates from the new session.
+      if (!res.ok) throw new Error("Dev login failed");
       window.location.href = "/";
-    } catch (err) {
-      setError("Demo login failed — please try again");
+    } catch {
+      setDevPinError(isRtl ? "فشل الدخول، حاول مجدداً" : "Login failed — try again");
     } finally {
       setLoading(false);
     }
@@ -137,19 +149,56 @@ export default function Login() {
               </Button>
             </form>
 
-            {/* Demo shortcut */}
+            {/* Developer access */}
             <div className="mt-4 pt-4 border-t border-border/50">
-              <p className="text-xs text-muted-foreground text-center mb-2">
-                {isRtl ? "أو جرّب الحساب التجريبي" : "Or try the demo account"}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full h-10 border-purple-500/40 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 text-sm"
-                onClick={fillDemo}
-              >
-                {isRtl ? "🎮 دخول كـ Solaf (تجريبي)" : "🎮 Login as Solaf (Demo)"}
-              </Button>
+              {!showDevPin ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full h-9 text-xs text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/30"
+                  onClick={() => { setShowDevPin(true); setDevPin(""); setDevPinError(""); }}
+                >
+                  {isRtl ? "⚙️ وصول المطور" : "⚙️ Developer Access"}
+                </Button>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs text-muted-foreground text-center">
+                    {isRtl ? "أدخل رمز المطور المكوّن من 4 أرقام" : "Enter the 4-digit developer code"}
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      type="password"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={devPin}
+                      onChange={(e) => handleDevPinChange(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && devPin.length === 4 && handleDevAccess()}
+                      placeholder="••••"
+                      className="bg-background/60 text-center tracking-[0.5em] font-mono text-lg h-11"
+                      autoFocus
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleDevAccess}
+                      disabled={devPin.length !== 4 || loading}
+                      className="h-11 px-4 bg-zinc-700 hover:bg-zinc-600 text-white shrink-0"
+                    >
+                      {isRtl ? "دخول" : "Enter"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => { setShowDevPin(false); setDevPin(""); setDevPinError(""); }}
+                      className="h-11 px-3 text-muted-foreground shrink-0"
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                  {devPinError && (
+                    <p className="text-xs text-destructive text-center">{devPinError}</p>
+                  )}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
