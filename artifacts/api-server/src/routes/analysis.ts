@@ -117,10 +117,10 @@ Output this exact JSON:
   "descriptionEn": "3-4 sentences describing this financial personality",
   "descriptionAr": "3-4 جمل تصف هذه الشخصية المالية",
   "strengths": [
-    {"titleEn": "...", "titleAr": "...", "descriptionEn": "...", "descriptionAr": "..."}
+    {"en": "...", "ar": "..."}
   ],
   "improvements": [
-    {"titleEn": "...", "titleAr": "...", "descriptionEn": "...", "descriptionAr": "..."}
+    {"en": "...", "ar": "..."}
   ],
   "traits": [
     {"nameEn": "Risk Tolerance", "nameAr": "تحمل المخاطر", "score": <0-100>},

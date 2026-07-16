@@ -21,8 +21,10 @@ import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
+const RISK_LEVEL_MAP: Record<string, string> = { low: "safe", medium: "moderate", high: "risky" };
+
 function parseScenario(row: typeof aiScenariosTable.$inferSelect) {
-  const options = JSON.parse(row.optionsJson) as Array<{
+  const options = (JSON.parse(row.optionsJson) as Array<{
     id: string;
     labelEn: string;
     labelAr: string;
@@ -30,7 +32,7 @@ function parseScenario(row: typeof aiScenariosTable.$inferSelect) {
     xpReward: number;
     outcomePreviewEn: string;
     outcomePreviewAr: string;
-  }>;
+  }>).map((o) => ({ ...o, riskLevel: RISK_LEVEL_MAP[o.riskLevel] ?? o.riskLevel }));
   return {
     id: row.id,
     titleEn: row.titleEn,
