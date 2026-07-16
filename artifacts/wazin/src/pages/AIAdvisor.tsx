@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useGetChatHistory, useSendChatMessage } from '@workspace/api-client-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { cn } from '@/lib/utils';
 
 export default function AIAdvisor() {
   const { t, language } = useLanguage();
+  const { user } = useAuth();
   const { data: history, isLoading, refetch } = useGetChatHistory();
   const sendMessage = useSendChatMessage();
   const [input, setInput] = useState('');
@@ -58,8 +60,8 @@ export default function AIAdvisor() {
     {
       id: 1,
       role: 'assistant',
-      contentAr: 'أهلاً بك! أنا مستشارك المالي الذكي. كيف يمكنني مساعدتك في تحقيق أهدافك المالية اليوم؟',
-      contentEn: 'Welcome! I am your AI financial advisor. How can I help you achieve your financial goals today?',
+      contentAr: `أهلاً بك يا ${user?.username ?? ''}! أنا مستشارك المالي الذكي. كيف يمكنني مساعدتك في تحقيق أهدافك المالية اليوم؟`,
+      contentEn: `Welcome ${user?.username ?? ''}! I am your AI financial advisor. How can I help you achieve your financial goals today?`,
       createdAt: new Date().toISOString()
     }
   ];
