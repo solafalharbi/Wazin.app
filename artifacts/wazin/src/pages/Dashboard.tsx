@@ -72,9 +72,13 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-1">
-            {language === 'ar'
-              ? `أهلاً بعودتك يا ${s.user?.username ?? ''}!`
-              : `Welcome back, ${s.user?.username ?? ''}!`}
+            {(s.user?.xp ?? 0) === 0 && (s.user?.level ?? 1) === 1
+              ? (language === 'ar'
+                  ? `أهلاً بك يا ${s.user?.username ?? ''}!`
+                  : `Welcome, ${s.user?.username ?? ''}!`)
+              : (language === 'ar'
+                  ? `أهلاً بعودتك يا ${s.user?.username ?? ''}!`
+                  : `Welcome back, ${s.user?.username ?? ''}!`)}
           </h1>
           <p className="text-muted-foreground">
             {t('ها هي نظرة سريعة على تقدمك المالي هذا الأسبوع.', 'Here is a quick look at your financial progress this week.')}

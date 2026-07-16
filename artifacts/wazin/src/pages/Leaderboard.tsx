@@ -32,7 +32,7 @@ export default function Leaderboard() {
     { rank: 1, userId: 101, username: 'juju (جوجو)', xp: 4500, level: 12, isCurrentUser: false, weeklyXpGain: 850, badge: 'Pioneer', avatarUrl: null },
     { rank: 2, userId: 102, username: 'Nama (نمى)', xp: 4100, level: 11, isCurrentUser: false, weeklyXpGain: 720, badge: 'Investor', avatarUrl: null },
     { rank: 3, userId: 103, username: 'Leen (لين)', xp: 3800, level: 10, isCurrentUser: false, weeklyXpGain: 650, badge: 'Saver', avatarUrl: null },
-    { rank: 4, userId: 1, username: 'Solaf (صلف)', xp: 3200, level: 8, isCurrentUser: true, weeklyXpGain: 550, badge: 'Rising Star', avatarUrl: null },
+    { rank: 4, userId: 1, username: 'Solaf', xp: 3200, level: 8, isCurrentUser: false, weeklyXpGain: 550, badge: 'Rising Star', avatarUrl: null },
     { rank: 5, userId: 104, username: 'Ahmed (أحمد)', xp: 2900, level: 7, isCurrentUser: false, weeklyXpGain: 400, badge: null, avatarUrl: null },
   ];
 

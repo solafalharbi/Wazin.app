@@ -148,7 +148,7 @@ export default function Login() {
                 className="w-full h-10 border-purple-500/40 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 text-sm"
                 onClick={fillDemo}
               >
-                {isRtl ? "🎮 دخول كـ صلوف (تجريبي)" : "🎮 Login as Solaf (Demo)"}
+                {isRtl ? "🎮 دخول كـ Solaf (تجريبي)" : "🎮 Login as Solaf (Demo)"}
               </Button>
             </div>
           </CardContent>

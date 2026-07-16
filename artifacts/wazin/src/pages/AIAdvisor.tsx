@@ -58,8 +58,8 @@ export default function AIAdvisor() {
     {
       id: 1,
       role: 'assistant',
-      contentAr: 'أهلاً بك يا صلف! أنا مستشارك المالي الذكي. كيف يمكنني مساعدتك في تحقيق أهدافك المالية اليوم؟',
-      contentEn: 'Welcome Solaf! I am your AI financial advisor. How can I help you achieve your financial goals today?',
+      contentAr: 'أهلاً بك! أنا مستشارك المالي الذكي. كيف يمكنني مساعدتك في تحقيق أهدافك المالية اليوم؟',
+      contentEn: 'Welcome! I am your AI financial advisor. How can I help you achieve your financial goals today?',
       createdAt: new Date().toISOString()
     }
   ];

@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, Link } from 'wouter';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from 'next-themes';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
@@ -28,6 +29,7 @@ export function Sidebar({ className }: { className?: string }) {
   const [location] = useLocation();
   const { language, setLanguage, t } = useLanguage();
   const { theme, setTheme } = useTheme();
+  const { user } = useAuth();
 
   const navItems = [
     { href: '/', icon: LayoutDashboard, labelAr: 'الرئيسية', labelEn: 'Dashboard' },
@@ -66,20 +68,23 @@ export function Sidebar({ className }: { className?: string }) {
       <div className="mb-8 px-2">
         <div className="flex items-center gap-3 mb-3">
           <Avatar className="h-12 w-12 border-2 border-sidebar-primary">
-            <AvatarImage src="/avatar-solaf.png" />
-            <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground font-semibold">SO</AvatarFallback>
+            <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground font-semibold">
+              {(user?.username ?? '').substring(0, 2).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <div className="flex flex-col flex-1">
-            <span className="font-semibold text-lg">{t('صلف', 'Solaf')}</span>
-            <span className="text-xs text-sidebar-foreground/60">{t('المستوى 4', 'Level 4')}</span>
+            <span className="font-semibold text-lg">{user?.username ?? ''}</span>
+            <span className="text-xs text-sidebar-foreground/60">
+              {language === 'ar' ? `المستوى ${user?.level ?? 1}` : `Level ${user?.level ?? 1}`}
+            </span>
           </div>
         </div>
         <div className="space-y-1.5">
           <div className="flex justify-between text-xs text-sidebar-foreground/70">
             <span>XP</span>
-            <span>450 / 1000</span>
+            <span>{user?.xp ?? 0} / {((user?.level ?? 1) * 500)}</span>
           </div>
-          <Progress value={45} className="h-2 bg-sidebar-accent [&>div]:bg-sidebar-primary" />
+          <Progress value={(((user?.xp ?? 0) % ((user?.level ?? 1) * 500)) / ((user?.level ?? 1) * 500)) * 100} className="h-2 bg-sidebar-accent [&>div]:bg-sidebar-primary" />
         </div>
       </div>
 
