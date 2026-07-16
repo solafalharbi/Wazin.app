@@ -7,7 +7,7 @@ import {
   SendChatMessageResponse,
   GetAIInsightResponse,
 } from "@workspace/api-zod";
-import { openai } from "../lib/openai";
+import { openai, AI_MODEL, extractJson } from "../lib/openai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -61,8 +61,8 @@ router.post("/ai/chat", async (req, res): Promise<void> => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 600,
+      model: AI_MODEL,
+      max_tokens: 600,
       messages: [
         {
           role: "system",
@@ -101,8 +101,8 @@ router.get("/ai/insight", async (req, res): Promise<void> => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 800,
+      model: AI_MODEL,
+      max_tokens: 800,
       messages: [
         {
           role: "system",
@@ -131,7 +131,7 @@ Output JSON:
     });
 
     const raw = completion.choices[0]?.message?.content ?? "{}";
-    const data = JSON.parse(raw);
+    const data = extractJson<Record<string, unknown>>(raw);
     res.json(GetAIInsightResponse.parse({ ...data, score: data.score ?? 78, trend: data.trend ?? "improving" }));
   } catch (err) {
     logger.warn({ err }, "AI insight generation failed, using fallback");

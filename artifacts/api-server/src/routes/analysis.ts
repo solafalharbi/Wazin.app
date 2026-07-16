@@ -12,7 +12,7 @@ import {
   GetPersonalityAnalysisResponse,
   GeneratePersonalityAnalysisResponse,
 } from "@workspace/api-zod";
-import { openai } from "../lib/openai";
+import { openai, AI_MODEL, extractJson } from "../lib/openai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -104,8 +104,8 @@ router.post("/analysis/personality/generate", async (req, res): Promise<void> =>
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 2000,
+      model: AI_MODEL,
+      max_tokens: 2000,
       messages: [
         {
           role: "system",
@@ -152,7 +152,7 @@ Output JSON with this EXACT structure (no markdown, no extra text):
     });
 
     const raw = completion.choices[0]?.message?.content ?? "{}";
-    const data = JSON.parse(raw);
+    const data = extractJson<Record<string, any>>(raw);
 
     const [row] = await db
       .insert(personalityAnalysesTable)

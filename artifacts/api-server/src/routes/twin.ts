@@ -13,7 +13,7 @@ import {
   GetTwinProjectionResponse,
   GenerateTwinProjectionResponse,
 } from "@workspace/api-zod";
-import { openai } from "../lib/openai";
+import { openai, AI_MODEL, extractJson } from "../lib/openai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -102,8 +102,8 @@ Current Year: ${currentYear}
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 3000,
+      model: AI_MODEL,
+      max_tokens: 8192,
       messages: [
         {
           role: "system",
@@ -189,7 +189,7 @@ Include 3 risks and 3 goals. Make projections culturally relevant to Saudi Arabi
     });
 
     const raw = completion.choices[0]?.message?.content ?? "{}";
-    const data = JSON.parse(raw);
+    const data = extractJson<Record<string, any>>(raw);
 
     const [row] = await db
       .insert(financialTwinsTable)

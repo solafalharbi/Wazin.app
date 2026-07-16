@@ -16,7 +16,7 @@ import {
   RespondToScenarioBody,
   RespondToScenarioResponse,
 } from "@workspace/api-zod";
-import { openai } from "../lib/openai";
+import { openai, AI_MODEL, extractJson } from "../lib/openai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -103,8 +103,8 @@ Recent decisions risk profile: ${recentDecisions.length > 0 ? "mixed" : "no hist
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 1200,
+      model: AI_MODEL,
+      max_tokens: 1200,
       messages: [
         {
           role: "system",
@@ -162,7 +162,7 @@ Output JSON with this exact structure (no markdown, no extra text):
     });
 
     const raw = completion.choices[0]?.message?.content ?? "{}";
-    const data = JSON.parse(raw);
+    const data = extractJson<Record<string, any>>(raw);
 
     const [row] = await db
       .insert(aiScenariosTable)
@@ -236,8 +236,8 @@ router.post("/scenarios/:scenarioId/respond", async (req, res): Promise<void> =>
 
   try {
     const fbCompletion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 400,
+      model: AI_MODEL,
+      max_tokens: 400,
       messages: [
         {
           role: "system",
@@ -255,7 +255,7 @@ Give personalised feedback in English and Arabic. JSON: {"feedbackEn":"...","fee
     });
 
     const fbRaw = fbCompletion.choices[0]?.message?.content ?? "{}";
-    const fb = JSON.parse(fbRaw);
+    const fb = extractJson<Record<string, any>>(fbRaw);
     feedbackEn = fb.feedbackEn ?? feedbackEn;
     feedbackAr = fb.feedbackAr ?? feedbackAr;
     impactSummaryEn = fb.impactSummaryEn ?? impactSummaryEn;
