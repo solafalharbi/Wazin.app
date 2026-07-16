@@ -71,6 +71,13 @@ app.use(sessionMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Never let the browser (or any proxy) cache user-specific API responses.
+// Without this, a 304 from one user's session gets served to the next user.
+app.use("/api", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
+
 // Require a valid API token on all /api routes (healthz is exempted inside the middleware).
 app.use("/api", requireApiToken);
 
