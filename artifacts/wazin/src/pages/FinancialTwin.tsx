@@ -29,7 +29,7 @@ export default function FinancialTwin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data, isLoading, isError } = useGetTwinProjection({ query: { retry: false } });
+  const { data, isLoading, isError } = useGetTwinProjection();
   const generateTwin = useGenerateTwinProjection();
 
   const handleGenerate = () => {

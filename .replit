@@ -21,3 +21,9 @@ timeoutMs = 20000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+API_TOKEN = "ecd9205e75715cc6addf19d4f5ad40e2e763d44306b737fec3cb56f64d0834f6"
+VITE_API_TOKEN = "ecd9205e75715cc6addf19d4f5ad40e2e763d44306b737fec3cb56f64d0834f6"

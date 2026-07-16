@@ -5,6 +5,7 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { llmGenerateLimiter, llmChatLimiter } from "./lib/rateLimiter";
+import { requireApiToken } from "./lib/auth";
 
 const app: Express = express();
 
@@ -60,6 +61,9 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Require a valid API token on all /api routes (healthz is exempted inside the middleware).
+app.use("/api", requireApiToken);
 
 // Rate-limit all LLM-backed endpoints before the main router.
 // Generation endpoints (expensive — up to 8 192 tokens each): 5 req / 15 min per IP.

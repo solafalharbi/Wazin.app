@@ -19,7 +19,7 @@ export default function PersonalityAnalysis() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data, isLoading, isError } = useGetPersonalityAnalysis({ query: { retry: false } });
+  const { data, isLoading, isError } = useGetPersonalityAnalysis();
   const generateAnalysis = useGeneratePersonalityAnalysis();
 
   const handleGenerate = () => {
