@@ -2,6 +2,7 @@ import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from 'next-themes';
 import { useGetUserProfile, useUpdateUserProfile } from '@workspace/api-client-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -10,13 +11,22 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { User, Settings, Globe, Moon, Sun, Save, Shield } from 'lucide-react';
+import { User, Settings, Globe, Moon, Sun, Save, Shield, LogOut } from 'lucide-react';
 
 export default function Profile() {
   const { t, language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
   const { data: profile, isLoading, refetch } = useGetUserProfile();
   const updateProfile = useUpdateUserProfile();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      // logout navigates away regardless
+    }
+  };
 
   const [username, setUsername] = React.useState('');
 
@@ -188,6 +198,18 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Logout */}
+      <div className="pt-2">
+        <Button
+          variant="outline"
+          className="w-full h-11 border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground gap-2 transition-colors"
+          onClick={handleLogout}
+        >
+          <LogOut size={18} />
+          {t('تسجيل الخروج', 'Log out')}
+        </Button>
       </div>
     </div>
   );

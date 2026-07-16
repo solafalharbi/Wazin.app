@@ -38,10 +38,10 @@ export function Sidebar({ className }: { className?: string }) {
     { href: '/ai-advisor', icon: MessageSquare, labelAr: 'المستشار الذكي', labelEn: 'AI Advisor' },
     { href: '/rewards', icon: Gift, labelAr: 'المكافآت', labelEn: 'Rewards' },
     { href: '/leaderboard', icon: Trophy, labelAr: 'لوحة الصدارة', labelEn: 'Leaderboard' },
-    { href: '/profile', icon: User, labelAr: 'الملف الشخصي', labelEn: 'Profile' },
     { href: '/scenarios', icon: Sparkles, labelAr: 'سيناريوهات الذكاء', labelEn: 'AI Scenarios' },
     { href: '/personality', icon: BrainCircuit, labelAr: 'شخصيتي المالية', labelEn: 'My Personality' },
     { href: '/financial-twin', icon: TrendingUp, labelAr: 'توأمي المالي', labelEn: 'Financial Twin' },
+    { href: '/profile', icon: User, labelAr: 'الملف الشخصي', labelEn: 'Profile' },
   ];
 
   const toggleLanguage = () => {
