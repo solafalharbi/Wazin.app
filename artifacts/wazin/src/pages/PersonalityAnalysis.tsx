@@ -24,17 +24,20 @@ export default function PersonalityAnalysis() {
 
   const handleGenerate = () => {
     generateAnalysis.mutate(undefined, {
-      onSuccess: () => {
+      onSuccess: (data) => {
+        // Update the query cache immediately so the UI shows the new analysis
+        // without waiting for a background refetch.
+        queryClient.setQueryData(getGetPersonalityAnalysisQueryKey(), data);
         queryClient.invalidateQueries({ queryKey: getGetPersonalityAnalysisQueryKey() });
         toast({
           title: t('تم إنشاء التحليل بنجاح!', 'Analysis Generated!'),
           description: t('لقد قام الذكاء الاصطناعي بتحليل شخصيتك المالية.', 'AI has successfully analyzed your financial personality.'),
         });
       },
-      onError: () => {
+      onError: (err) => {
         toast({
           title: t('حدث خطأ', 'Error'),
-          description: t('لم نتمكن من توليد التحليل. حاول مرة أخرى.', 'Could not generate analysis. Try again.'),
+          description: err instanceof Error ? err.message : t('لم نتمكن من توليد التحليل. حاول مرة أخرى.', 'Could not generate analysis. Try again.'),
           variant: 'destructive',
         });
       },

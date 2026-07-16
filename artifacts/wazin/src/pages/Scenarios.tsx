@@ -30,17 +30,28 @@ export default function Scenarios() {
     generateScenario.mutate(
       { data: {} },
       {
-        onSuccess: () => {
+        onSuccess: (newScenario) => {
+          // Append the new scenario to the cached list immediately so the UI
+          // updates without waiting for a background refetch.
+          queryClient.setQueryData(
+            getGetActiveScenariosQueryKey(),
+            (old: typeof scenarios | undefined) => {
+              if (!old) return [newScenario];
+              // Avoid duplicates if the refetch already included it.
+              const filtered = old.filter((s) => s.id !== newScenario.id);
+              return [newScenario, ...filtered];
+            }
+          );
           queryClient.invalidateQueries({ queryKey: getGetActiveScenariosQueryKey() });
           toast({
             title: t('تم إنشاء سيناريو جديد!', 'New Scenario Generated!'),
             description: t('لقد قام الذكاء الاصطناعي بتجهيز تحدي جديد لك.', 'AI has prepared a new challenge for you.'),
           });
         },
-        onError: () => {
+        onError: (err) => {
           toast({
             title: t('حدث خطأ', 'Error'),
-            description: t('لم نتمكن من إنشاء السيناريو. حاول مرة أخرى.', 'Could not generate scenario. Try again.'),
+            description: err instanceof Error ? err.message : t('لم نتمكن من إنشاء السيناريو. حاول مرة أخرى.', 'Could not generate scenario. Try again.'),
             variant: 'destructive',
           });
         },
