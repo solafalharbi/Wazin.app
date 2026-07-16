@@ -13,7 +13,7 @@ import {
   GetTwinProjectionResponse,
   GenerateTwinProjectionResponse,
 } from "@workspace/api-zod";
-import { openai, AI_MODEL_LITE, extractJson } from "../lib/openai";
+import { openaiManaged, AI_MODEL_MANAGED, extractJson } from "../lib/openai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -105,9 +105,8 @@ Current Year: ${currentYear}
     // Ask the AI for the base-case projection only (risks + goals + summaries).
     // Optimistic / pessimistic scenarios are derived mathematically so the
     // response stays well within the OpenRouter free-tier token budget.
-    const completion = await openai.chat.completions.create({
-      model: AI_MODEL_LITE,
-      max_tokens: 1400,
+    const completion = await openaiManaged.chat.completions.create({
+      model: AI_MODEL_MANAGED,
       messages: [
         {
           role: "system",
@@ -126,7 +125,11 @@ Rules: severity = "low"|"medium"|"high". probability = 0 to 1. Keep descriptions
       ],
     });
 
-    const raw = completion.choices[0]?.message?.content ?? "{}";
+    const raw = completion.choices[0]?.message?.content ?? "";
+    logger.info({ rawLength: raw.length, rawPreview: raw.slice(0, 200) }, "Twin AI raw response");
+    if (!raw.trim()) {
+      throw new Error("AI returned empty response");
+    }
     const data = extractJson<Record<string, any>>(raw);
 
     // Derive optimistic (+25% income, +40% savings, -5% expenses) and

@@ -11,8 +11,14 @@ export const openai = new OpenAI({
 });
 
 export const AI_MODEL = "google/gemini-2.5-flash";
-// Cheaper model used for token-heavy routes when the primary model exceeds credit budget
-export const AI_MODEL_LITE = "meta-llama/llama-3.1-8b-instruct:free";
+
+// Replit-managed OpenAI integration — used for token-heavy routes (Financial Twin).
+// AI_INTEGRATIONS_OPENAI_BASE_URL and AI_INTEGRATIONS_OPENAI_API_KEY are auto-provisioned.
+export const openaiManaged = new OpenAI({
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY ?? "placeholder",
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+});
+export const AI_MODEL_MANAGED = "gpt-5-mini"; // cost-effective, reliable JSON generation
 
 
 /**
