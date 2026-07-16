@@ -7,20 +7,31 @@ if (!API_TOKEN) {
 }
 
 /**
- * Require a valid `Authorization: Bearer <API_TOKEN>` header on every request.
- * Health-check is exempted so Replit's deployment probes continue to work.
+ * Gate all /api requests behind EITHER:
+ *   1. A valid `Authorization: Bearer <API_TOKEN>` header (server-to-server), OR
+ *   2. An authenticated browser session (req.session.userId is set).
+ *
+ * Auth routes (/auth/*) and the health-check are always exempted — they
+ * bootstrap the session and cannot require a token first.
  */
 export function requireApiToken(req: Request, res: Response, next: NextFunction): void {
-  // Always allow health-check so deployment probes are unaffected.
-  if (req.path === "/healthz") {
+  // Always allow health-check probes.
+  // Always allow auth endpoints — they're the entry point for obtaining a session.
+  if (req.path === "/healthz" || req.path.startsWith("/auth/")) {
     next();
     return;
   }
 
+  // Accept a valid API token (server-to-server calls).
   const authHeader = req.headers["authorization"] ?? "";
   const [scheme, token] = authHeader.split(" ");
-
   if (scheme === "Bearer" && token === API_TOKEN) {
+    next();
+    return;
+  }
+
+  // Accept a valid browser session (logged-in users).
+  if (req.session?.userId) {
     next();
     return;
   }

@@ -6,6 +6,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
+import { getAuthToken } from "@workspace/api-client-react";
 
 export type AuthUser = {
   id: number;
@@ -32,22 +33,13 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const API_TOKEN = import.meta.env.VITE_API_TOKEN as string | undefined;
-
-function authHeaders(extra?: Record<string, string>): Record<string, string> {
-  return {
-    "Content-Type": "application/json",
-    ...(API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {}),
-    ...extra,
-  };
-}
-
 async function apiFetch(path: string, init?: RequestInit) {
+  const token = await getAuthToken();
   return fetch(path, {
     ...init,
     credentials: "include",
     headers: {
-      ...(API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init?.body ? { "Content-Type": "application/json" } : {}),
       ...(init?.headers as Record<string, string> | undefined),
     },
