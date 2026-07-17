@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useGetRewards, useGetUserRewards, useRedeemReward, useGetUserProfile } from '@workspace/api-client-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLoader } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -22,17 +22,7 @@ export default function Rewards() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   if (isLoadingRewards || isLoadingUserRewards) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-48 mb-6" />
-        <Skeleton className="h-24 w-full md:w-96 rounded-xl mb-8" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Skeleton className="h-[300px] w-full rounded-xl" />
-          <Skeleton className="h-[300px] w-full rounded-xl" />
-          <Skeleton className="h-[300px] w-full rounded-xl" />
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   const handleRedeem = () => {

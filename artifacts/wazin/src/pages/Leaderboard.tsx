@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useGetLeaderboard } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLoader } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Medal, Star, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -13,17 +13,7 @@ export default function Leaderboard() {
   const { data: leaderboard, isLoading } = useGetLeaderboard();
 
   if (isLoading) {
-    return (
-      <div className="space-y-6 max-w-3xl mx-auto">
-        <Skeleton className="h-10 w-48 mb-6" />
-        <Skeleton className="h-32 w-full rounded-xl" />
-        <div className="space-y-3 mt-8">
-          <Skeleton className="h-20 w-full rounded-xl" />
-          <Skeleton className="h-20 w-full rounded-xl" />
-          <Skeleton className="h-20 w-full rounded-xl" />
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   // Use provided hardcoded specific users if API doesn't return them exactly as requested,

@@ -8,7 +8,7 @@ import {
 } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLoader } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -45,19 +45,7 @@ export default function PersonalityAnalysis() {
   };
 
   if (isLoading && !isError) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64 mb-8" />
-        <Skeleton className="h-[250px] w-full rounded-xl" />
-        <div className="grid md:grid-cols-2 gap-6">
-          <Skeleton className="h-[300px] w-full rounded-xl" />
-          <div className="space-y-6">
-            <Skeleton className="h-[140px] w-full rounded-xl" />
-            <Skeleton className="h-[140px] w-full rounded-xl" />
-          </div>
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (

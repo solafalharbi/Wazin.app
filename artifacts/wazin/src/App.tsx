@@ -7,6 +7,7 @@ import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import { ThemeProvider } from 'next-themes';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { Spinner } from '@/components/ui/spinner';
 
 import Layout from '@/components/Layout';
 import Dashboard from '@/pages/Dashboard';
@@ -30,15 +31,7 @@ function AuthGate() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-purple-600 flex items-center justify-center animate-pulse">
-            <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 text-white" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3C8 3 4 6 4 10c0 5 8 11 8 11s8-6 8-11c0-4-4-7-8-7z" />
-              <circle cx="12" cy="10" r="3" fill="currentColor" />
-            </svg>
-          </div>
-          <p className="text-muted-foreground text-sm">Loading Wazin…</p>
-        </div>
+        <Spinner size="xl" />
       </div>
     );
   }

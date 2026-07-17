@@ -8,7 +8,7 @@ import {
 } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLoader } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -82,17 +82,7 @@ export default function FinancialTwin() {
   };
 
   if (isLoading && !isError) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64 mb-8" />
-        <div className="grid md:grid-cols-3 gap-6 mb-6">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-        <Skeleton className="h-[400px] w-full" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (

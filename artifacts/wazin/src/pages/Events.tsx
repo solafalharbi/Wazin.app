@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useGetEconomicEvents, useMakeDecision } from '@workspace/api-client-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLoader } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, TrendingDown, Gift, Stethoscope, Briefcase, Zap, Clock, ShieldCheck, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
@@ -14,15 +14,7 @@ export default function Events() {
   const decideMutation = useMakeDecision();
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-48 mb-6" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Skeleton className="h-64 w-full rounded-xl" />
-          <Skeleton className="h-64 w-full rounded-xl" />
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   const handleDecision = (eventId: number, optionId: string) => {

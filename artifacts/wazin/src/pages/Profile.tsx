@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLoader } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import { User, Settings, Globe, Moon, Sun, Save, Shield, LogOut } from 'lucide-react';
 
@@ -37,12 +37,7 @@ export default function Profile() {
   }, [profile]);
 
   if (isLoading) {
-    return (
-      <div className="space-y-6 max-w-2xl mx-auto">
-        <Skeleton className="h-48 w-full rounded-xl" />
-        <Skeleton className="h-64 w-full rounded-xl" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   const handleSave = () => {

@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useGetDashboardSummary, useGetActivityFeed } from '@workspace/api-client-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLoader } from '@/components/ui/spinner';
 import { Progress } from '@/components/ui/progress';
 import { Trophy, Zap, Lightbulb, TrendingUp, Coins, Activity, ArrowUpRight, ArrowDownRight, Target, Gamepad2, Gift, MessageSquare } from 'lucide-react';
 import { Link } from 'wouter';
@@ -26,21 +26,7 @@ export default function Dashboard() {
   const { data: activities, isLoading: isLoadingActivities } = useGetActivityFeed();
 
   if (isLoadingSummary || isLoadingActivities) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-48 mb-6" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Skeleton className="h-96 w-full rounded-xl lg:col-span-2" />
-          <Skeleton className="h-96 w-full rounded-xl" />
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   // Fallback data if API returns empty
