@@ -137,36 +137,6 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   });
 });
 
-// ── POST /auth/demo ───────────────────────────────────────────────────────────
-// Instantly logs in as the Solaf demo account (user id=1) without a password.
-router.post("/auth/demo", async (req, res): Promise<void> => {
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.id, 1));
-
-  if (!user) {
-    res.status(404).json({ error: "Demo account not found" });
-    return;
-  }
-
-  req.session.userId = user.id;
-
-  res.json({
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    level: user.level,
-    xp: user.xp,
-    coins: user.coins,
-    language: user.language,
-    theme: user.theme,
-    badge: user.badge,
-    avatarUrl: user.avatarUrl,
-    joinedAt: user.joinedAt.toISOString(),
-  });
-});
-
 // ── POST /auth/logout ─────────────────────────────────────────────────────────
 router.post("/auth/logout", (req, res): void => {
   req.session.destroy((err) => {

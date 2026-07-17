@@ -1,6 +1,35 @@
 import rateLimit from "express-rate-limit";
 
 /**
+ * Login endpoint: 10 attempts per 15 minutes per IP.
+ * Limits brute-force credential attacks without blocking normal users
+ * (a legitimate user rarely needs more than 2–3 attempts per session).
+ */
+export const authLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: {
+    error: "Too many login attempts. Please wait 15 minutes before trying again.",
+  },
+});
+
+/**
+ * Registration endpoint: 5 registrations per hour per IP.
+ * Limits registration spam / fake-account flooding.
+ */
+export const authRegisterLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: {
+    error: "Too many registration attempts. Please wait before creating another account.",
+  },
+});
+
+/**
  * Tight limit for expensive LLM generation endpoints
  * (financial twin, personality analysis, scenario generation).
  * Each call costs up to 8 192 tokens — 5 per IP per 15 min is generous enough

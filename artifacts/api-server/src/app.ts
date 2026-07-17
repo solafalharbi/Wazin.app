@@ -4,7 +4,7 @@ import helmet from "helmet";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
-import { llmGenerateLimiter, llmChatLimiter } from "./lib/rateLimiter";
+import { llmGenerateLimiter, llmChatLimiter, authLoginLimiter, authRegisterLimiter } from "./lib/rateLimiter";
 import { requireApiToken } from "./lib/auth";
 import { sessionMiddleware, requireSession } from "./lib/session";
 
@@ -83,6 +83,10 @@ app.use("/api", requireApiToken);
 
 // Require a valid session on all /api routes except public auth endpoints.
 app.use("/api", requireSession);
+
+// Rate-limit auth endpoints to block brute-force and registration spam.
+app.use("/api/auth/login", authLoginLimiter);
+app.use("/api/auth/register", authRegisterLimiter);
 
 // Rate-limit all LLM-backed endpoints before the main router.
 // Generation endpoints (expensive — up to 8 192 tokens each): 5 req / 15 min per IP.
