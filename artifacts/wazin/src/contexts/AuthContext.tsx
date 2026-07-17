@@ -6,7 +6,6 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { getAuthToken } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/queryClient";
 
 export type AuthUser = {
@@ -35,12 +34,10 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 async function apiFetch(path: string, init?: RequestInit) {
-  const token = await getAuthToken();
   return fetch(path, {
     ...init,
     credentials: "include",
     headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init?.body ? { "Content-Type": "application/json" } : {}),
       ...(init?.headers as Record<string, string> | undefined),
     },

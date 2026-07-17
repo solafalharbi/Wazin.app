@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
-import { getAuthToken } from "@workspace/api-client-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AuthLayout } from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
@@ -57,13 +56,11 @@ export default function Login() {
     setDevPinError("");
     setLoading(true);
     try {
-      const token = await getAuthToken();
       const res = await fetch("/api/auth/demo", {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ pin: devPin }),
       });
