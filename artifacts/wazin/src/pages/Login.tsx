@@ -87,14 +87,14 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email" className="font-medium text-sm">
-                {isRtl ? "اسم المستخدم أو البريد الإلكتروني" : "Username or email"}
+                {isRtl ? "البريد الإلكتروني" : "Email"}
               </Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={isRtl ? "أدخل اسم المستخدم أو البريد الإلكتروني" : "Enter your username or email"}
+                placeholder={isRtl ? "أدخل بريدك الإلكتروني" : "Enter your email"}
                 required
                 autoComplete="email"
                 className="h-12 bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-[#6C4AB6]"
