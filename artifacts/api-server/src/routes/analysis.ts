@@ -12,7 +12,7 @@ import {
   GetPersonalityAnalysisResponse,
   GeneratePersonalityAnalysisResponse,
 } from "@workspace/api-zod";
-import { openai, AI_MODEL, extractJson } from "../lib/openai";
+import { openaiManaged, AI_MODEL_MANAGED, extractJson } from "../lib/openai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -93,9 +93,8 @@ router.post("/analysis/personality/generate", async (req, res): Promise<void> =>
     : "No decisions yet — user is new to the platform.";
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: AI_MODEL,
-      max_tokens: 2000,
+    const completion = await openaiManaged.chat.completions.create({
+      model: AI_MODEL_MANAGED,
       messages: [
         {
           role: "system",

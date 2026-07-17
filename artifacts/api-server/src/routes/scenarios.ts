@@ -16,7 +16,7 @@ import {
   RespondToScenarioBody,
   RespondToScenarioResponse,
 } from "@workspace/api-zod";
-import { openai, AI_MODEL, extractJson } from "../lib/openai";
+import { openaiManaged, AI_MODEL_MANAGED, extractJson } from "../lib/openai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -106,9 +106,8 @@ Recent decisions risk profile: ${recentDecisions.length > 0 ? "mixed" : "no hist
 `;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: AI_MODEL,
-      max_tokens: 1200,
+    const completion = await openaiManaged.chat.completions.create({
+      model: AI_MODEL_MANAGED,
       messages: [
         {
           role: "system",
@@ -254,9 +253,8 @@ router.post("/scenarios/:scenarioId/respond", async (req, res): Promise<void> =>
   }
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: AI_MODEL,
-      max_tokens: 600,
+    const completion = await openaiManaged.chat.completions.create({
+      model: AI_MODEL_MANAGED,
       messages: [
         {
           role: "system",
