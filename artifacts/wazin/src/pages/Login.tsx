@@ -61,7 +61,11 @@ export default function Login() {
       const res = await fetch("/api/auth/demo", {
         method: "POST",
         credentials: "include",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ pin: devPin }),
       });
       if (!res.ok) throw new Error("Dev login failed");
       window.location.href = "/";
