@@ -30,6 +30,21 @@ export const authRegisterLimiter = rateLimit({
 });
 
 /**
+ * Demo/developer login endpoint: 5 attempts per 15 minutes per IP.
+ * Even though the endpoint is gated by a secret PIN, this prevents
+ * brute-forcing a short numeric PIN if the PIN ever becomes known.
+ */
+export const authDemoLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: {
+    error: "Too many developer login attempts. Please wait 15 minutes before trying again.",
+  },
+});
+
+/**
  * Tight limit for expensive LLM generation endpoints
  * (financial twin, personality analysis, scenario generation).
  * Each call costs up to 8 192 tokens — 5 per IP per 15 min is generous enough

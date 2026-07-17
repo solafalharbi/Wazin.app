@@ -138,10 +138,16 @@ router.post("/auth/register", async (req, res): Promise<void> => {
 });
 
 // ── POST /auth/demo ───────────────────────────────────────────────────────────
-// Developer quick-login. Requires the correct PIN both client- and server-side.
+// Developer quick-login. Requires the correct PIN set via DEVELOPER_PIN secret.
 router.post("/auth/demo", async (req, res): Promise<void> => {
   const { pin } = req.body ?? {};
-  const DEV_PIN = process.env.DEVELOPER_PIN ?? "6767";
+  const DEV_PIN = process.env.DEVELOPER_PIN;
+
+  // Fail closed: if the secret is not configured, the endpoint is disabled.
+  if (!DEV_PIN) {
+    res.status(403).json({ error: "Developer access is not enabled" });
+    return;
+  }
 
   if (String(pin) !== DEV_PIN) {
     res.status(401).json({ error: "Invalid developer PIN" });

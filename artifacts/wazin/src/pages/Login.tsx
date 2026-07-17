@@ -9,8 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 
-const DEV_CODE = "6767";
-
 export default function Login() {
   const { login } = useAuth();
   const { language } = useLanguage();
@@ -48,11 +46,6 @@ export default function Login() {
   };
 
   const handleDevAccess = async () => {
-    if (devPin !== DEV_CODE) {
-      setDevPinError(isRtl ? "رمز غير صحيح" : "Incorrect code");
-      setDevPin("");
-      return;
-    }
     setDevPinError("");
     setLoading(true);
     try {
